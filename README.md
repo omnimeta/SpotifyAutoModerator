@@ -1,11 +1,11 @@
 # SpotifyAutoModerator
 
-[Code Coverage Badge](coverage/badge.svg)
+[Code Coverage Badge](https://raw.githubusercontent.com/omnimeta/SpotifyAutoModerator/main/coverage/badge.svg)
 
 ## The Problem
 
-Spotify's collaborative playlists can be an awesome tool for constructing and sharing unique music with friends (and more).
-However, there are two crucial issues with Spotify's collaborative playlists which can be a great annoyance for those use the feature frequently
+Spotify's collaborative playlists can be an awesome tool for constructing and sharing unique mixes of music with friends (and more).
+However, there are two crucial issues with Spotify's collaborative playlist system that can be a great annoyance for those use the feature frequently
 
 * any user can add any track to a public collaborative playlist; and
 * any user can remove any track from a public collaborative playlist.
@@ -19,7 +19,7 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 
 * **enforcement of a whitelist of authorized users** - automatic removal of any track additions by users which are not explicitly authorized;
 * **enforcement of a blacklist* of unauthorized users** - automatic removal of any track additions by users which are explicitly banned from contributing to a particular playlist (or all playlists); and
-* **track restoration after unapproved removal**** - SpotifyAutoModerator will automatically ask you to approve the removals of tracks from your protected playlists and will restore any tracks that were removed without your approval.
+* **track restoration after unapproved removal** - SpotifyAutoModerator will automatically ask you to approve the removals of tracks from your protected playlists and will restore any tracks that were removed without your approval.
 
 ## Project Roadmap
 
