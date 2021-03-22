@@ -1,0 +1,9 @@
+!.gitignore
+.cache
+.coverage
+data/logs/*
+*/**/__pycache__
+
+!coverage/
+coverage/*
+!coverage/badge.svg

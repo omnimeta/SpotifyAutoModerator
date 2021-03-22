@@ -1,0 +1,8 @@
+[report]
+
+exclude_lines =
+  # The following lines are not (conviniently) runnable and can be excluded from the report
+  if __name__ == .__main__.:
+
+[html]
+directory = coverage

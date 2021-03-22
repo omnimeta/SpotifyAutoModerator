@@ -1,0 +1,9 @@
+#!/bin/sh
+# Use this script to run SpotifyAutoModerator:  ./spautomod [options]
+
+COMBINED_ARGS=""
+for ARGUMENT in "${@}"; do
+    COMBINED_ARGS="${COMBINED_ARGS} ${ARGUMENT}"
+done
+
+python3 -m src.main ${COMBINED_ARGS}

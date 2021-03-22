@@ -1,0 +1,191 @@
+---
+# WARNING: please CAREFULLY read the README.md file located in the project's root directory BEFORE making
+# changes to this file, and certainly before attempting to run spautomod.
+# An incorrect configuration could potentially result in a loss of your playlist data!
+# You can use the command `./spautomod --rdc` to restore the default configuration file.
+
+
+###########  PLAYLIST SCAN CONFIGURATION  ##########
+
+PLAYLIST_CONFIG:
+
+# ----- Delay Between Each Cycle of Playlist Moderation ----- #
+#
+# How long (in seconds) do you want SpotifyAutoModerator to wait before starting a new scan?
+# For example, a frequency of 30 minutes means that SpotifyAutoModerator will wait 30 minutes AFTER COMPLETING
+# a particular scan of all protected playlists before it starts the next scan.
+# During this delay time you will have the ability to quit.
+#
+# Example - 2 minute delay:
+#  'DELAY_BETWEEN_SCANS': 120
+
+  DELAY_BETWEEN_SCANS: 120
+
+
+# ----- Global Whitelist of Authorized Users ---- #
+#
+# A list of accounts authorized to contribute to ALL of your protected playlists.
+# For example, you may trust some friends to add tracks to all of your protected playlists.
+#
+# Example:
+#  GLOBAL_WHITELIST:
+#    - spotifyusername1
+#    - spotifyusername2
+
+  GLOBAL_WHITELIST:
+    - spotifyusername1
+
+
+# ----- Global Blacklisting of Unauthorized Users ----- #
+#
+# A list of accounts essentially blocked from contributing to any of your collaborative playlists.
+#
+# Example:
+#  GLOBAL_BLACKLIST:
+#    - spotifyusername1
+#    - spotifyusername2
+
+  GLOBAL_BLACKLIST:
+    - spotifyusername1
+
+
+# ----- Protect All or Selected ----- #
+#
+# Do you want SpotifyAutoModerator to protect ALL of your collaborative playlists?
+# Available options: True, False
+#
+# Example:
+#  PROTECT_ALL: false
+
+  PROTECT_ALL: false
+
+
+# ----- Default Protection Mode ----- #
+#
+# If your have `PROTECT_ALL` set to True (such that all of your collaborative playlists are protected),
+# if a playlist does not have its own configuration in `PROTECTED_PLAYLISTS`, should it be moderated
+# based on `GLOBAL_WHITELIST` or `GLOBAL_BLACKLIST`
+# Available options: 'blacklist, 'whitelist'
+#
+# Example:
+#  DEFAULT_MODE: blacklist
+
+  DEFAULT_MODE: blacklist
+
+
+# ----- Maximum Number of Backups Per Playlist ----- #
+#
+# SpotifyAutoModerator identifies removals of tracks using backups of playlist constituents.
+# What is the maximum number of backups that should be stored for each playlist?
+# This number cannot be less than 1.
+#
+# Example:
+#  MAX_BACKUPS_PER_PLAYLIST: 1
+
+  MAX_BACKUPS_PER_PLAYLIST: 1
+
+
+# ----- Backup Path ----- #
+#
+# File system path where playlist backups will be stored.
+#
+# Example:
+#  BACKUP_PATH: data/backups
+
+  BACKUP_PATH: data/backups
+
+
+# ------ Playlist-specific Protection Settings ------ #
+# List of playlists that should be monitored and a list of authorized accounts for each playlist
+#
+# Example:
+#  PROTECTED_PLAYLISTS:
+#    - ProgressiveJazzFusion:
+#        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxxx
+#        whitelist:
+#          - spotifyusername1,
+#          - spotifyusername2
+#         
+#    - ProkofievConcertoMix:
+#        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxxx
+#        blacklist:
+#          - spotifyusername3
+#          - spotifyusername4
+
+  PROTECTED_PLAYLISTS:
+    - MyPlaylistLabel:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxxx
+        whitelist:
+          - spotifyusername1
+
+
+##########  SPOTIFY ACCOUNT CONFIGURATION  ##########
+
+ACCOUNT_CONFIG:
+
+# ----- API Authorization Information for the Application ------ #
+#
+# API access for a new application can be configured at 'developer.spotify.com/dashboard/applications'
+# Your `REDIRECT_URI` will need to be configured for the application once you generate a client ID/secret
+#
+# Example:
+#  CLIENT_ID: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#  CLIENT_SECRET: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#  REDIRECT_URI: http://localhost:8080
+
+  CLIENT_ID: replace_this_with_your_spotify_client_id
+  CLIENT_SECRET: replace_this_with_your_spotify_client_secret
+  REDIRECT_URI: http://localhost:8080
+
+
+# ----- Spotify Username (Account ID) ----- #
+#
+# WARNING: Spotify display names are often not the same as their corresponding account names/IDs!
+# Find your username on your Spotify profile: 'More' ('...' button) -> 'Share' -> 'Copy Spotify URI'
+# Your username is then the LATTER PART of your Spotify URI (after, and excluding) the second colon
+# For example, if your Spotify URI is 'spotify:user:omnimeta' then your username/ID is 'omnimeta'.
+#
+# Example:
+#   USERNAME: spotifyusername
+
+  USERNAME: replace_this_with_your_spotify_username
+
+
+##########  LOGGING CONFIGURATION  ##########
+
+LOG_CONFIG:
+
+# ----- File for Storing Log Data ----- #
+#
+# The path identifying the file where log information from runs of SpotifyAutoModerator will be stored
+#
+# Example:
+#  FILE: data/logs/debug.log
+
+  FILE: data/logs/debug.log
+
+
+# ----- Log Format ----- #
+#
+# The format used for logging.
+#
+# Example:
+#  FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+
+  FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+
+# ----- Log Levels ----- #
+#
+# The threshold (of severity) for log messages to be displayed on the console or saved to the log file.
+# A lower level results in more information being logged. E.g., no log messages are ignored if at the lowest
+# level ('debug'), but all except the most severe log messages (like those relating to critical errors)
+# are ignored at the highest level ('critical').
+# Available options: 'debug', 'info', 'warning', 'error', 'critical'
+#
+# Example:
+#  FILE_LEVEL: debug
+#  CONSOLE_LEVEL: info
+
+  FILE_LEVEL: debug
+  CONSOLE_LEVEL: info
