@@ -38,10 +38,10 @@ $> ./setup.sh
 ## Register the Application on Your Spotify Dashboard
 
 Register the application at: https://developer.spotify.com/dashboard/login
-<div style="text-align:center"><img src="data/images/register_app.png" /></div>
+<img src="data/images/register_app.png" />
 
-Once the application is registered, note the generated client ID and client secret, then click the `EDIT SETTINGS` button and add `http://localhost:8080` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number.
-<div style="text-align:center"><img src="data/images/add_redirect_uri.png" /></div>
+Once the application is registered, note the generated client ID and client secret, then click the `EDIT SETTINGS` button and add `http://localhost:8080/` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number.
+<img src="data/images/add_redirect_uri.png" />
 
 Update `ACCOUNT_CONFIG.CLIENT_ID`, `ACCOUNT_CONFIG.CLIENT_SECRET`, and `ACCOUNT_CONFIG.REDIRECT_URI` in `data/config.yaml` based on the details discussed in the previous step:
 
@@ -130,10 +130,10 @@ The **`blacklist`** property of each protected playlist identifies a list of Spo
 
 When a Spotify user adds a track to one of your protected playlists, SpotifyAutoModerator will consider the addition to be authorized if and only if:
 
-* **the user is explicitly _authorized_ at the _playlist-level_** because
+* the user is explicitly _authorized_ at the _playlist-level_ because
   * the playlist's own configuration has a `whitelist` which _includes_ the user's username/ID, or
   * the playlist's own configuration has a `blacklist` (and no `whitelist`) which does _not include_ the user's username/ID; or
-* **the user is _not_ explicitly _unauthorized_ at the _playlist-level_ and the user is explicitly _authorized_ at the global level** because
+* the user is _not_ explicitly _unauthorized_ at the _playlist-level_ and the user is explicitly _authorized_ at the global level because
   * the global `DEFAULT_MODE` is `blacklist` and the user's username/ID is _not included_ in the `GLOBAL_BLACKLIST`, or
   * the global `DEFAULT_MODE` is `whitelist` and the user's username/ID is _included_ in the `GLOBAL_WHITELIST`.
   
