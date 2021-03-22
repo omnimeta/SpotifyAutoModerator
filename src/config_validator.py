@@ -66,7 +66,7 @@ class ConfigValidator:
         required = [
             'DELAY_BETWEEN_SCANS',
             'PROTECT_ALL',
-            'DEFAULT_MODE',
+            'GLOBAL_MODE',
             'PROTECTED_PLAYLISTS',
             'BACKUP_PATH',
             'MAX_BACKUPS_PER_PLAYLIST'
@@ -89,8 +89,8 @@ class ConfigValidator:
             self.logger.error('Please appropriately update this option in `data/config.yaml`')
             return False
 
-        if not (self.playlist['DEFAULT_MODE'] == 'blacklist' or self.playlist['DEFAULT_MODE'] == 'whitelist'):
-            self.logger.error('`PLAYLIST_CONFIG.DEFAULT_MODE` is invalid - it can be either \'blacklist\' or \'whitelist\'')
+        if not (self.playlist['GLOBAL_MODE'] == 'blacklist' or self.playlist['GLOBAL_MODE'] == 'whitelist'):
+            self.logger.error('`PLAYLIST_CONFIG.GLOBAL_MODE` is invalid - it can be either \'blacklist\' or \'whitelist\'')
             self.logger.error('Please appropriately update this option in `data/config.yaml`')
             return False
 
@@ -104,6 +104,15 @@ class ConfigValidator:
             and not isinstance(self.playlist['GLOBAL_BLACKLIST'], list)):
             self.logger.error('`PLAYLIST_CONFIG.GLOBAL_BLACKLIST` is invalid - it must be a list')
             self.logger.error('Please appropriately update this option in `data/config.yaml`')
+            return False
+
+        if (self.playlist['GLOBAL_MODE'] == 'blacklist'
+            and 'GLOBAL_BLACKLIST' not in self.playlist.keys()):
+            self.logger.error('`PLAYLIST_CONFIG.GLOBAL_MODE` is `blacklist` but `PLAYLIST_CONFIG.GLOBAL_BLACKLIST` is not defined!')
+            return False
+        elif (self.playlist['GLOBAL_MODE'] == 'whitelist'
+              and 'GLOBAL_WHITELIST' not in self.playlist.keys()):
+            self.logger.error('`PLAYLIST_CONFIG.GLOBAL_MODE` is `whitelist` but `PLAYLIST_CONFIG.GLOBAL_WHITELIST` is not defined!')
             return False
 
         if not isinstance(self.playlist['PROTECTED_PLAYLISTS'], list):

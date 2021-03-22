@@ -259,36 +259,36 @@ class TestPlaylistCleaner(unittest.TestCase):
         self.assertTrue(cleaner.playlist_addition_is_authorized('adder_id', pl_id))
 
 
-    def test_playlist_addition_is_authorized_returns_true_if_default_mode_is_blacklist_and_adder_not_globally_blacklisted(self):
+    def test_playlist_addition_is_authorized_returns_true_if_global_mode_is_blacklist_and_adder_not_globally_blacklisted(self):
         pl_config = {
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_BLACKLIST': []
         }
         cleaner = PlaylistCleaner(self.test_logger, Mock(), 'owner_id', pl_config)
         self.assertTrue(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
 
-    def test_playlist_addition_is_authorized_returns_false_if_default_mode_is_blacklist_and_adder_globally_blacklisted(self):
+    def test_playlist_addition_is_authorized_returns_false_if_global_mode_is_blacklist_and_adder_globally_blacklisted(self):
         pl_config = {
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_BLACKLIST': [ 'adder_id' ]
         }
         cleaner = PlaylistCleaner(self.test_logger, Mock(), 'owner_id', pl_config)
         self.assertFalse(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
 
-    def test_playlist_addition_is_authorized_returns_false_if_default_mode_is_whitelist_and_adder_not_globally_whitelisted(self):
+    def test_playlist_addition_is_authorized_returns_false_if_GLOBAL_mode_is_whitelist_and_adder_not_globally_whitelisted(self):
         pl_config = {
-            'DEFAULT_MODE': 'whitelist',
+            'GLOBAL_MODE': 'whitelist',
             'GLOBAL_WHITELIST': []
         }
         cleaner = PlaylistCleaner(self.test_logger, Mock(), 'owner_id', pl_config)
         self.assertFalse(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
 
-    def test_playlist_addition_is_authorized_returns_true_if_default_mode_is_whitelist_and_adder_globally_whitelisted(self):
+    def test_playlist_addition_is_authorized_returns_true_if_GLOBAL_mode_is_whitelist_and_adder_globally_whitelisted(self):
         pl_config = {
-            'DEFAULT_MODE': 'whitelist',
+            'GLOBAL_MODE': 'whitelist',
             'GLOBAL_WHITELIST': [ 'adder_id' ]
         }
         cleaner = PlaylistCleaner(self.test_logger, Mock(), 'owner_id', pl_config)
@@ -318,9 +318,9 @@ class TestPlaylistCleaner(unittest.TestCase):
         self.assertTrue(cleaner.playlist_addition_is_authorized('owner_id', self.generate_spotify_id()))
 
 
-    def test_playlist_addition_is_authorized_ignores_global_whitelist_if_default_mode_is_blacklist(self):
+    def test_playlist_addition_is_authorized_ignores_global_whitelist_if_GLOBAL_mode_is_blacklist(self):
         pl_config = {
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_WHITELIST': [ 'adder_id' ],
             'GLOBAL_BLACKLIST': [ 'adder_id' ]
         }
@@ -328,7 +328,7 @@ class TestPlaylistCleaner(unittest.TestCase):
         self.assertFalse(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
         pl_config = {
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': []
         }
@@ -336,9 +336,9 @@ class TestPlaylistCleaner(unittest.TestCase):
         self.assertTrue(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
 
-    def test_playlist_addition_is_authorized_ignores_global_blacklist_if_default_mode_is_whitelist(self):
+    def test_playlist_addition_is_authorized_ignores_global_blacklist_if_GLOBAL_mode_is_whitelist(self):
         pl_config = {
-            'DEFAULT_MODE': 'whitelist',
+            'GLOBAL_MODE': 'whitelist',
             'GLOBAL_WHITELIST': [ 'adder_id' ],
             'GLOBAL_BLACKLIST': [ 'adder_id' ]
         }
@@ -346,7 +346,7 @@ class TestPlaylistCleaner(unittest.TestCase):
         self.assertTrue(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
         pl_config = {
-            'DEFAULT_MODE': 'whitelist',
+            'GLOBAL_MODE': 'whitelist',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': []
         }
@@ -354,9 +354,9 @@ class TestPlaylistCleaner(unittest.TestCase):
         self.assertFalse(cleaner.playlist_addition_is_authorized('adder_id', self.generate_spotify_id()))
 
 
-    def test_playlist_addition_is_authorized_returns_false_if_adder_not_locally_authorized_and_default_mode_is_unknown(self):
+    def test_playlist_addition_is_authorized_returns_false_if_adder_not_locally_authorized_and_GLOBAL_mode_is_unknown(self):
         pl_config = {
-            'DEFAULT_MODE': 'not a valid mode',
+            'GLOBAL_MODE': 'not a valid mode',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': []
         }

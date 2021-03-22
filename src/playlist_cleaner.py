@@ -81,10 +81,10 @@ class PlaylistCleaner:
         # 'authorized' - explicitly authorized
         # 'unauthorized' - explicitly authorized
 
-        if 'DEFAULT_MODE' in self.config.keys():
-            if self.config['DEFAULT_MODE'] == 'blacklist':
+        if 'GLOBAL_MODE' in self.config.keys():
+            if self.config['GLOBAL_MODE'] == 'blacklist':
                 return 'unauthorized' if adder_id in self.config['GLOBAL_BLACKLIST'] else 'authorized'
-            elif self.config['DEFAULT_MODE'] == 'whitelist':
+            elif self.config['GLOBAL_MODE'] == 'whitelist':
                 return 'authorized' if adder_id in self.config['GLOBAL_WHITELIST'] else 'unauthorized'
         return 'neutral'
 

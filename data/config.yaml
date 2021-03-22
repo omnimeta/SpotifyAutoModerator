@@ -37,18 +37,17 @@ PLAYLIST_CONFIG:
   PROTECT_ALL: false
 
 
-  # ----- Default Protection Mode ----- #
+  # ----- Global Protection Mode ----- #
   #
-  # If your have `PROTECT_ALL` set to True (such that all of your collaborative
-  # playlists are protected), if a playlist does not have its own configuration
-  # in `PROTECTED_PLAYLISTS`, should it be moderated based on `GLOBAL_WHITELIST`
-  # or `GLOBAL_BLACKLIST`.
-  # Available options: 'blacklist, 'whitelist'
+  # Determines how authorization of track additions to protected playlists are
+  # evaluated at the global level (i.e., if the addition is not explicitly
+  # authorized/unauthorized at the local, playlist-level).
+  # Available options: blacklist, whitelist
   #
   # Example:
-  # DEFAULT_MODE: blacklist
+  # GLOBAL_MODE: whitelist
 
-  DEFAULT_MODE: blacklist
+  GLOBAL_MODE: whitelist
 
 
   # ----- Global Whitelist of Authorized Users ---- #
@@ -76,8 +75,7 @@ PLAYLIST_CONFIG:
   #   - spotifyusername1
   #   - spotifyusername2
 
-  GLOBAL_BLACKLIST:
-    - spotifyusername1
+  GLOBAL_BLACKLIST: []
 
 
   # ----- Maximum Number of Backups Per Playlist ----- #

@@ -160,7 +160,7 @@ class TestConfigValidator(unittest.TestCase):
         validator = ConfigValidator(playlist={
             'DELAY_BETWEEN_SCANS': 90,
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'PROTECTED_PLAYLISTS': [],
             'BACKUP_PATH': 'data/test/backup/some_path'
         })
@@ -169,7 +169,7 @@ class TestConfigValidator(unittest.TestCase):
         validator = ConfigValidator(playlist={
             'DELAY_BETWEEN_SCANS': 90,
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'PROTECTED_PLAYLISTS': [],
             'MAX_BACKUPS_PER_PLAYLIST': 2
         })
@@ -178,7 +178,7 @@ class TestConfigValidator(unittest.TestCase):
         validator = ConfigValidator(playlist={
             'DELAY_BETWEEN_SCANS': 90,
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2
         })
@@ -195,7 +195,7 @@ class TestConfigValidator(unittest.TestCase):
 
         validator = ConfigValidator(playlist={
             'DELAY_BETWEEN_SCANS': 90,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'PROTECTED_PLAYLISTS': [],
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2
@@ -204,7 +204,7 @@ class TestConfigValidator(unittest.TestCase):
 
         validator = ConfigValidator(playlist={
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'PROTECTED_PLAYLISTS': [],
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2
@@ -218,7 +218,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -232,7 +232,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -246,7 +246,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': 'not_a_bool',
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -254,13 +254,13 @@ class TestConfigValidator(unittest.TestCase):
         self.assertFalse(validator.validate_playlist_config())
 
 
-    def test_validate_playlist_config_returns_false_if_default_mode_is_not_blacklist_or_whitelist(self):
+    def test_validate_playlist_config_returns_false_if_GLOBAL_mode_is_not_blacklist_or_whitelist(self):
         validator = ConfigValidator(playlist={
             'DELAY_BETWEEN_SCANS': 90,
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'not_a_valid_mode',
+            'GLOBAL_MODE': 'not_a_valid_mode',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -273,7 +273,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': 'not a list'
@@ -287,7 +287,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -302,7 +302,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': 'not_a_list',
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -316,7 +316,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': 'not_a_list',
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -330,7 +330,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 900,
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -344,7 +344,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 'not_an_int',
             'PROTECTED_PLAYLISTS': []
@@ -356,11 +356,39 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 0,
             'PROTECTED_PLAYLISTS': []
         })
+        self.assertFalse(validator.validate_playlist_config())
+
+
+    def test_validate_playlist_config_returns_false_if_global_mode_is_blacklist_and_global_blacklist_not_set(self):
+        validator = ConfigValidator(playlist={
+            'DELAY_BETWEEN_SCANS': 90,
+            'GLOBAL_WHITELIST': [],
+            'PROTECT_ALL': False,
+            'GLOBAL_MODE': 'blacklist',
+            'BACKUP_PATH': 'data/test/backup/some_path',
+            'MAX_BACKUPS_PER_PLAYLIST': 2,
+            'PROTECTED_PLAYLISTS': []
+        })
+        validator.validate_protected_playlists = Mock(return_value=True)
+        self.assertFalse(validator.validate_playlist_config())
+
+
+    def test_validate_playlist_config_returns_false_if_global_mode_is_whitelist_and_global_whitelist_not_set(self):
+        validator = ConfigValidator(playlist={
+            'DELAY_BETWEEN_SCANS': 90,
+            'GLOBAL_BLACKLIST': [],
+            'PROTECT_ALL': False,
+            'GLOBAL_MODE': 'whitelist',
+            'BACKUP_PATH': 'data/test/backup/some_path',
+            'MAX_BACKUPS_PER_PLAYLIST': 2,
+            'PROTECTED_PLAYLISTS': []
+        })
+        validator.validate_protected_playlists = Mock(return_value=True)
         self.assertFalse(validator.validate_playlist_config())
 
 
@@ -370,7 +398,7 @@ class TestConfigValidator(unittest.TestCase):
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECT_ALL': False,
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'BACKUP_PATH': 'data/test/backup/some_path',
             'MAX_BACKUPS_PER_PLAYLIST': 2,
             'PROTECTED_PLAYLISTS': []
@@ -383,7 +411,7 @@ class TestConfigValidator(unittest.TestCase):
 
     def test_validate_protected_playlist_returns_false_if_any_playlists_has_no_uri(self):
         validator = ConfigValidator(playlist={
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECTED_PLAYLISTS': [
@@ -404,7 +432,7 @@ class TestConfigValidator(unittest.TestCase):
 
     def test_validate_protected_playlist_returns_false_if_any_playlist_has_an_invalid_uri(self):
         validator = ConfigValidator(playlist={
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECTED_PLAYLISTS': [
@@ -428,7 +456,7 @@ class TestConfigValidator(unittest.TestCase):
     def test_validate_protected_playlist_returns_true_if_all_playlists_have_a_valid_uri(self):
         # empty whitelist and no whitelist are considered the same thing
         validator = ConfigValidator(playlist={
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECTED_PLAYLISTS': [
@@ -446,7 +474,7 @@ class TestConfigValidator(unittest.TestCase):
     def test_validate_protected_playlist_returns_false_if_a_playlist_has_more_than_one_label(self):
         # empty whitelist and no whitelist are considered the same thing
         validator = ConfigValidator(playlist={
-            'DEFAULT_MODE': 'blacklist',
+            'GLOBAL_MODE': 'blacklist',
             'GLOBAL_WHITELIST': [],
             'GLOBAL_BLACKLIST': [],
             'PROTECTED_PLAYLISTS': [
