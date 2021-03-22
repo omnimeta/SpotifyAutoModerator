@@ -168,7 +168,7 @@ Loop mode can be used to run SpotifyAutoModerator continuously until you ask the
 ``` shell
 $> ./spautomod -l
 ```
-or,
+or
 ``` shell
 $> ./spautomod --loop
 ```
