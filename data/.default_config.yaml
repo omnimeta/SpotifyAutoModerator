@@ -141,11 +141,11 @@ ACCOUNT_CONFIG:
   # Example:
   # CLIENT_ID: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   # CLIENT_SECRET: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  # REDIRECT_URI: http://localhost:8080
+  # REDIRECT_URI: http://localhost:8080/
 
   CLIENT_ID: replace_this_with_your_spotify_client_id
   CLIENT_SECRET: replace_this_with_your_spotify_client_secret
-  REDIRECT_URI: http://localhost:8080
+  REDIRECT_URI: http://localhost:8080/
 
 
   # ----- Spotify Username (Account ID) ----- #
