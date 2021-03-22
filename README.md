@@ -25,6 +25,8 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 
 ## Installation
 
+### Download the Project Source
+
 To install SpotifyAutoModerator, run the following commands:
 
 ``` shell
@@ -33,8 +35,14 @@ $> cd SpotifyAutoModerator
 $> ./setup.sh
 ```
 
+## Register the Application on Your Spotify Dashboard
+
 Register the application at: https://developer.spotify.com/dashboard/login
-Once the application is registered, Note the generated client ID and client secret, then add `http://localhost:8080` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number.
+<div style="text-align:center"><img src="data/images/register_app.png" /></div>
+
+Once the application is registered, note the generated client ID and client secret, then click the `EDIT SETTINGS` button and add `http://localhost:8080` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number.
+<div style="text-align:center"><img src="data/images/add_redirect_uri.png" /></div>
+
 
 ## Project Roadmap
 
