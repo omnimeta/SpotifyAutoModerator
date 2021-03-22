@@ -24,13 +24,13 @@ class TestMain(unittest.TestCase):
 
     @patch('src.main.print_help_information', side_effect=main.print_help_information)
     def test_main_prints_help_info_and_exits_with_code_0_if_help_option_in_args(self, print_help_mock):
-        with patch.object(sys, 'argv', '--help') as stubbed_args:
+        with patch.object(sys, 'argv', [ '--help' ]) as stubbed_args:
             with self.assertRaises(SystemExit) as sys_exit:
                 main.main()
         print_help_mock.assert_called_once()
         self.assertEqual(sys_exit.exception.code, 0)
 
-        with patch.object(sys, 'argv', '-h') as stubbed_args:
+        with patch.object(sys, 'argv', ['-h']) as stubbed_args:
             with self.assertRaises(SystemExit) as sys_exit:
                 main.main()
         self.assertEqual(print_help_mock.call_count, 2)
@@ -39,7 +39,7 @@ class TestMain(unittest.TestCase):
 
     @patch('src.main.restore_default_config_file')
     def test_main_returns_return_value_of_restore_config_if_rdc_option_in_args(self, restore_stub):
-        with patch.object(sys, 'argv', '--rdc') as stubbed_args:
+        with patch.object(sys, 'argv', ['--rdc']) as stubbed_args:
             restore_stub.return_value = 0
             with self.assertRaises(SystemExit) as sys_exit:
                 main.main()

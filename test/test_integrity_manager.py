@@ -36,8 +36,7 @@ class TestIntegrityManager(unittest.TestCase):
 
     def tearDown(self):
         for filename in os.listdir(self.test_backup_path):
-            if re.search('^.*\.backup\.json', filename) is not None:
-                os.remove('%s/%s' % (self.test_backup_path, filename))
+            os.remove('%s/%s' % (self.test_backup_path, filename))
 
 
     def test_integrity_manager_ignores_trailing_slashes_on_the_backup_path(self):
