@@ -134,7 +134,7 @@ When a Spotify user adds a track to one of your protected playlists, SpotifyAuto
 * the user is explicitly _authorized_ at the _playlist-level_ because
   * the playlist's own configuration has a `whitelist` which _includes_ the user's username/ID, or
   * the playlist's own configuration has a `blacklist` (and no `whitelist`) which does _not include_ the user's username/ID; or
-* the user is _not_ explicitly _unauthorized_ at the _playlist-level_ and the user is explicitly _authorized_ at the global level because
+* the user is _not_ explicitly _unauthorized_ at the _playlist-level_ and the user is explicitly _authorized_ at the `global level`` because
   * the global `GLOBAL_MODE` is `blacklist` and the user's username/ID is _not included_ in the `GLOBAL_BLACKLIST`, or
   * the global `GLOBAL_MODE` is `whitelist` and the user's username/ID is _included_ in the `GLOBAL_WHITELIST`.
   
@@ -226,7 +226,7 @@ PLAYLIST_CONFIG:
           - spotifyuser1
 ```
 
-In this example, `GLOBAL_MODE` is whitelist and three accoounts (representing the user's friends) are whitelisted. The three friend accounts can therefore add to the first three listed playlists (which do not explicitly blacklist any of them), and are also able to add to `ModernAlternativeRnB` because it has an explicit blacklist in which they are not included. `ModernAlternativeRnB` can be added to by any user except `spotifyuser1` because the playlist has its own blacklist in which the user is the sole constituent. Only the four listed collaborative playlists are moderated as `PROTECT_ALL` is `false`.
+In this example, the global mode is whitelist and three accounts (representing the user's friends) are whitelisted. The three friend accounts can therefore add to the first three listed playlists (which do not explicitly blacklist any of them), and are also able to add to `ModernAlternativeRnB` because it has an explicit blacklist in which they are not included. `ModernAlternativeRnB` can be added to by any user (including those not listed in this configuration) except `spotifyuser1` because the playlist has its own blacklist in which the user is the sole constituent. Only the four listed collaborative playlists are moderated as `PROTECT_ALL` is `false`.
 
 ### Running the Application
 
@@ -266,5 +266,4 @@ $> ./spautomod --loop
 
 The following are the current goals of the project:
 * addition of a set of integration tests;
-* vulnerability scanning of sourced libraries/packages;
-* provision of a Dockerfile.
+* vulnerability scanning of sourced libraries/packages.
