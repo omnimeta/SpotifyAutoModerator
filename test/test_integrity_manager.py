@@ -36,7 +36,8 @@ class TestIntegrityManager(unittest.TestCase):
 
     def tearDown(self):
         for filename in os.listdir(self.test_backup_path):
-            os.remove('%s/%s' % (self.test_backup_path, filename))
+            if re.search(filename, '^\.gitignore$') is None:
+                os.remove('%s/%s' % (self.test_backup_path, filename))
 
 
     def test_integrity_manager_ignores_trailing_slashes_on_the_backup_path(self):
@@ -210,9 +211,14 @@ class TestIntegrityManager(unittest.TestCase):
         })
         self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=[])
         self.manager.backup_playlist(pl_id)
-        backup_files = os.listdir(self.test_backup_path)
-        self.assertEqual(len(backup_files), 1)
-        self.assertIsNotNone(re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, backup_files[0]))
+        files = os.listdir(self.test_backup_path)
+        num_backups = 0
+        print(files)
+        for fl in files:
+            if re.search('^[A-Za-z0-9]{22}_[0-9]{10}\.[0-9]+\.backup\.json$', fl) is not None:
+                num_backups += 1
+        self.assertEqual(num_backups, 1)
+        self.assertIsNotNone(re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, files[0]))
 
 
     def test_backup_playlist_saves_playlist_backup_in_correct_format(self):

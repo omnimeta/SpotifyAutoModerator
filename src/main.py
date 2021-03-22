@@ -22,7 +22,7 @@ def main():
     # An erroneous configuration may result in some playlist data loss
     # All configuration-file related issues must be therefore be resolved before proceeding
     try:
-        (playlist_config, log_config, account_config) = load_configurations()
+        (playlist_config, log_config, account_config) = load_configurations(path=get_config_filepath())
     except Exception as err:
         print('Error: \'%s\'' % err)
         print('Invalid configuration file')
@@ -134,12 +134,14 @@ def load_configurations(path='data/config.yaml'):
     config_file = None
     try:
         config_file = open(path, 'r')
-        config_data = yaml.load(config_file.read())
+        config_data = yaml.load(config_file, Loader=yaml.FullLoader)
         return (
             config_data['PLAYLIST_CONFIG'],
             config_data['LOG_CONFIG'],
             config_data['ACCOUNT_CONFIG']
         )
+    except yaml.YAMLError as err:
+        raise err
     except Exception as err:
         raise err
     finally:

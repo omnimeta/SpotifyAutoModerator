@@ -4,6 +4,7 @@ import logging
 import sys
 import random
 import string
+import yaml
 import spotipy
 import os
 from inputimeout import inputimeout, TimeoutOccurred
@@ -507,17 +508,18 @@ class TestMain(unittest.TestCase):
 
     def test_load_configurations_loads_playlist_log_and_account_configurations_from_yaml_at_the_given_path(self):
         test_config = """
-        PLAYLIST_CONFIG:
-            PROTECTED_PLAYLISTS:
-              - PlaylistLabel1:
-                  uri: playlist1_uri
-                  whitelist:
-                    - spotifyusername1
-        LOG_CONFIG:
-            FILE: data/test/log/log_file_path
-        ACCOUNT_CONFIG:
-            USERNAME: spotifyusername
-        """
+---
+PLAYLIST_CONFIG:
+  PROTECTED_PLAYLISTS:
+    - PlaylistLabel1:
+        uri: playlist1_uri
+        whitelist:
+          - spotifyusername1
+LOG_CONFIG:
+  FILE: data/test/log/log_file_path
+ACCOUNT_CONFIG:
+  USERNAME: spotifyusername
+"""
         test_config_file = open('data/test/config/config.yaml', 'w')
         test_config_file.write(test_config)
         test_config_file.close()
@@ -536,6 +538,15 @@ class TestMain(unittest.TestCase):
         }, {
             'USERNAME': 'spotifyusername'
         }))
+
+
+    @patch('src.main.open')
+    @patch('src.main.yaml.load', side_effect=yaml.YAMLError())
+    def test_load_configurations_propagates_exception_and_closes_file_if_config_yaml_invalid(self, yaml_mock, open_stub):
+        fake_file = Mock()
+        open_stub.return_value = fake_file
+        self.assertRaises(yaml.YAMLError, main.load_configurations)
+        fake_file.close.assert_called_once()
 
 
     @patch('src.main.open')

@@ -23,10 +23,23 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 * **enforcement of a blacklist of unauthorized users** - automatic removal of any track additions by users which are explicitly banned from contributing to a particular playlist (or all playlists); and
 * **track restoration after unapproved removal** - SpotifyAutoModerator will automatically ask you to approve the removals of tracks from your protected playlists and will restore any tracks that were removed without your approval.
 
+## Installation
+
+To install SpotifyAutoModerator, run the following commands:
+
+``` shell
+$> git clone https://github.com/omnimeta/SpotifyAutoModerator.git
+$> cd SpotifyAutoModerator
+$> ./setup.sh
+```
+
+Register the application at: https://developer.spotify.com/dashboard/login
+Once the application is registered, Note the generated client ID and client secret, then add `http://localhost:8080` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number.
+
 ## Project Roadmap
 
 The following are the current goals of the project:
 * addition of a set of integration tests;
-* installation, configuration, and usage documentation;
+* configuration and usage documentation;
 * vulnerability scanning of sourced libraries/packages;
 * provision of a Dockerfile.
