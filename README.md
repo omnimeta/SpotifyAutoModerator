@@ -17,7 +17,7 @@ It is obvious that collaborative playlists required protection against such anno
 SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative playlists and provides the following services in an attempt to mitigate the aforementioned problem:
 
 * **enforcement of a whitelist of authorized users** - automatic removal of any track additions by users which are not explicitly authorized;
-* **enforcement of a blacklist* of unauthorized users** - automatic removal of any track additions by users which are explicitly banned from contributing to a particular playlist (or all playlists); and
+* **enforcement of a blacklist of unauthorized users** - automatic removal of any track additions by users which are explicitly banned from contributing to a particular playlist (or all playlists); and
 * **track restoration after unapproved removal** - SpotifyAutoModerator will automatically ask you to approve the removals of tracks from your protected playlists and will restore any tracks that were removed without your approval.
 
 ## Project Roadmap
