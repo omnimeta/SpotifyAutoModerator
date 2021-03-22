@@ -1,6 +1,6 @@
 # SpotifyAutoModerator
-
-[Code Coverage Badge](https://raw.githubusercontent.com/omnimeta/SpotifyAutoModerator/main/coverage/badge.svg)
+![Code Coverage Badge](https://raw.githubusercontent.com/omnimeta/SpotifyAutoModerator/main/coverage/badge.svg)
+<img src="https://raw.githubusercontent.com/omnimeta/SpotifyAutoModerator/main/coverage/badge.svg">
 
 ## The Problem
 
