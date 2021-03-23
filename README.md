@@ -1,10 +1,11 @@
 # SpotifyAutoModerator
+
+Automated moderator for collaborative playlists on Spotify.
+
 ![Code Coverage Badge](https://raw.githubusercontent.com/omnimeta/SpotifyAutoModerator/main/coverage/badge.svg)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/omnimeta/SpotifyAutoModerator/graphs/commit-activity)
 [![GitHub license](https://img.shields.io/github/license/omnimeta/SpotifyAutoModerator)](https://github.com/omnimeta/SpotifyAutoModerator/blob/master/LICENSE)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
-
-Automated moderator for collaborative playlists on Spotify.
 
 ## The Problem
 
