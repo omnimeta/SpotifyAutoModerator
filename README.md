@@ -38,9 +38,11 @@ $> ./setup.sh
 ## Register the Application on Your Spotify Dashboard
 
 Register the application at: https://developer.spotify.com/dashboard/login
+
 <img src="data/images/register_app.png" />
 
-Once the application is registered, note the generated client ID and client secret, then click the `EDIT SETTINGS` button and add `http://localhost:8080/` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number.
+Once the application is registered, note the generated client ID and client secret, then click the `EDIT SETTINGS` button and add `http://localhost:8080/` as a redirect URI to the application (in the Spotify dashboard). If the port `8080` is in use by some service (e.g., a local web server) on your system then replace `8080` with an unused port number. When you first run SpotifyAutoModerator, this URI will be used to open a new tab in your browser, in which you will be able to grant the application the necessary permissions for playlist moderation.
+
 <img src="data/images/add_redirect_uri.png" />
 
 Update `ACCOUNT_CONFIG.CLIENT_ID`, `ACCOUNT_CONFIG.CLIENT_SECRET`, and `ACCOUNT_CONFIG.REDIRECT_URI` in `data/config.yaml` based on the details discussed in the previous step:
@@ -93,7 +95,7 @@ When the application is run in loop mode, **`DELAY_BETWEEN_SCANS`** determines h
 
 **`BACKUP_PATH`** determines the directory in which backups of your protected playlists will be stored. The default path `data/backups` should be suitable for the vast majority of use cases.
 
-**NOTE**: rememeber, to acquire the username of a Spotify user, go to their user page and copy their Spotify URI. You can then retrieve the ID from the end of the URI (after `spotify:user:`). _DO NOT_ simply use the user's display name, as this may not match their ID.
+**NOTE**: remember, to acquire the username of a Spotify user, go to their user page and copy their Spotify URI. You can then retrieve the ID from the end of the URI (after `spotify:user:`). _DO NOT_ simply use the user's display name because this may not match their ID.
 
 
 #### Playlist-Specific Configuration
@@ -127,6 +129,8 @@ The **`whitelist`** property of each protected playlist identifies a list of Spo
 The **`blacklist`** property of each protected playlist identifies a list of Spotify usernames/IDs which are explicitly _unauthorized_ to contribute to the particular playlist. If a user listed in `blacklist` adds to the playlist, the track addition will be considered unauthorized (and will subsequently be removed from the playlist).
 
 **NOTE: each playlist-specific configuration can have either a `whitelist` or a `blacklist` for determining if track additions are authorized or not. If a playlist has both lists then the `blacklist` will be used and the `whitelist` will be ignored.**
+
+**NOTE**: remember, to acquire the username of a Spotify user, go to their user page and copy their Spotify URI. You can then retrieve the ID from the end of the URI (after `spotify:user:`). _DO NOT_ simply use the user's display name because this may not match their ID.
 
 #### How Unauthorized Track Additions are Determined
 
