@@ -53,6 +53,20 @@ class TestIntegrityManager(unittest.TestCase):
         }).config['BACKUP_PATH'][-1], 'h')
 
 
+    @patch('src.integrity_manager.SpotifyHelper', return_value=Mock())
+    def test_integrity_manager_passes_its_logger_and_api_client_to_spotify_helper(self, helper_mock):
+        particular_client = spotipy.client.Spotify()
+        IntegrityManager(self.test_logger, particular_client, {
+            'BACKUP_PATH': 'test_backup_path',
+            'PROTECTED_PLAYLISTS': [],
+            'MAX_BACKUPS_PER_PLAYLIST': 1
+        })
+        self.assertEqual(len(helper_mock.call_args[0]), 1)
+        self.assertEqual(len(helper_mock.call_args[1].keys()), 1)
+        helper_mock.assert_called_once_with(self.test_logger.getChild('IntegrityManager'), api=particular_client)
+
+
+
     # ----- Tests for IntegrityManager.run ----- #
 
     def test_run_takes_a_backup_and_does_not_check_integrity_of_a_playlist_with_no_existing_backup(self):

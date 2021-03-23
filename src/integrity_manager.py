@@ -11,7 +11,7 @@ class IntegrityManager:
         self.logger = logger.getChild('IntegrityManager')
         self.api = api
         self.config = config
-        self.spotify_helper = SpotifyHelper(self.logger)
+        self.spotify_helper = SpotifyHelper(self.logger, api=self.api)
 
         # to avoid uncertainty of whether a forward slash needs to be appended to the backup path
         while self.config['BACKUP_PATH'][-1] == '/':

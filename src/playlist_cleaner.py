@@ -13,7 +13,8 @@ class PlaylistCleaner:
         self.logger.info('Initiating playlist scanning/cleaning procedire')
         playlist_id = self.spotify_helper.get_playlist_id(playlist)
         unauth_additions = self.find_unauthorized_additions(playlist_id)
-        self.remove_playlist_items(playlist_id, unauth_additions)
+        if len(unauth_additions) > 0:
+            self.remove_playlist_items(playlist_id, unauth_additions)
 
 
     def find_unauthorized_additions(self, playlist_id):

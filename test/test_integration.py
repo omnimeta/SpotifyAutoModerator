@@ -13,8 +13,8 @@ import src.main as main
 
 # These tests serve the purpose of end-to-end tests.
 # Only responses from external entities (such as the Spotify API and the user) are stubbed.
-# Correctness of behaviour is tested by checking attempted calls to the Spotify API and
-# any triggered system exit codes.
+# Correctness of behaviour is tested by checking corretness of external interactions such as
+# attempted API calls, saved backups, and exit codes.
 
 class TestIntegration(unittest.TestCase):
 
@@ -184,13 +184,16 @@ LOG_CONFIG:
             backup_file.close()
             return backup_file_path
 
+        pl_ids = [ 'xxxxxxxxxxxxxxxxxxxxx%d' % (pl_num + 1) for pl_num in range(0, 6) ]
+        pl_names = [ 'playlist%d' % (pl_num + 1) for pl_num in range(0, 6) ]
+
         backed_up_items = ([
             self.generate_track_uri() for i in range(0, 2) # items for playlist 1
         ], [
             self.generate_track_uri() for i in range(0, 2) # items for playlist 2
         ])
         backup_filepaths = []
-        backup_filepaths.append(save_backup('xxxxxxxxxxxxxxxxxxxxx1', {
+        backup_filepaths.append(save_backup(pl_ids[0], {
             'name': 'playlist1',
             'items': [
                 {
@@ -199,7 +202,7 @@ LOG_CONFIG:
                 } for item_num in range(0, len(backed_up_items[0]))
             ]
         }))
-        backup_filepaths.append(save_backup('xxxxxxxxxxxxxxxxxxxxx3', {
+        backup_filepaths.append(save_backup(pl_ids[2], {
             'name': 'playlist3',
             'items': [
                 {
@@ -209,9 +212,10 @@ LOG_CONFIG:
             ]
         }))
 
+        added_to_1_id = self.generate_spotify_id()
+        added_to_4_id = self.generate_spotify_id()
+
         # prepare mock API functions
-        pl_ids = [ 'xxxxxxxxxxxxxxxxxxxxx%d' % (pl_num + 1) for pl_num in range(0, 6) ]
-        pl_names = [ 'playlist%d' % (pl_num + 1) for pl_num in range(0, 6) ]
 
         def current_user_playlists(limit=50, offset=0):
             playlists = {
@@ -238,13 +242,13 @@ LOG_CONFIG:
             return None
         api_mock.return_value.playlist = Mock(side_effect=playlist)
 
-        added_to_1_uri = self.generate_track_uri()
 
-        # this is used for the 1st call to api.playlist_items (when checking for unauth additions)
-        # 3 calls for the same playlist in a row
+        # for playlist 1 and 3 (because they have a backup),
+        # there are 3 calls to api.playlist_items for the same playlist in a row
         # - one during cleaning
         # - one for removal restore
         # - one for backup
+        # for playlists with no backup there are only two calls
         playlist_items_responses = [
             { # playlist 1
                 'items': [
@@ -261,7 +265,7 @@ LOG_CONFIG:
                     { # this item was recently added (should be unauthorized)
                         'track': {
                             'name': 'pl1newtrack1',
-                            'uri': added_to_1_uri
+                            'uri': 'spotify:track:' + added_to_1_id
                         },
                         'added_at': time() - 2000, # arbitrary
                         'added_by': {
@@ -276,7 +280,7 @@ LOG_CONFIG:
             },
             { # playlist 1
                 'items': [
-                    { # this item was in the playlist before (and should be authorized)
+                    {
                         'track': {
                             'name': 'pl1track1',
                             'uri': backed_up_items[0][0],
@@ -285,23 +289,13 @@ LOG_CONFIG:
                         'added_by': {
                             'id': 'friendaccount1'
                         }
-                    },
-                    { # this item was restored
-                        'track': {
-                            'name': 'pl1track2',
-                            'uri': backed_up_items[0][1],
-                        },
-                        'added_at': time() - 40000, # arbitrary
-                        'added_by': {
-                            'id': 'testuser'
-                        }
                     }
                 ],
                 'limit': 100,
                 'offset': 0,
-                'total': 2
+                'total': 1
             },
-            { # playlist 1 assume nothing changed in the seconds since last call
+            { # playlist 1
                 'items': [
                     { # this item was in the playlist before (and should be authorized)
                         'track': {
@@ -340,12 +334,6 @@ LOG_CONFIG:
                 'offset': 0,
                 'total': 0
             },
-            { # playlist 2 - unchanged after restoring unauthorized additions
-                'items': [],
-                'limit': 100,
-                'offset': 0,
-                'total': 0
-            },
             { # playlist 3
                 'items': [], # both items were removed (1st approved, 2nd unapproved)
                 'limit': 100,
@@ -362,7 +350,7 @@ LOG_CONFIG:
                 'items': [
                     { # this item was restored
                         'track': {
-                            'name': 'pl2track2',
+                            'name': 'pl3track2',
                             'uri': backed_up_items[1][1],
                         },
                         'added_at': time(), # arbitrary
@@ -376,18 +364,23 @@ LOG_CONFIG:
                 'total': 0
             },
             { # playlist 4
-                'items': [],
+                'items': [
+                    { # added by blacklist user (should be unauthorized)
+                        'track': {
+                            'name': 'pl4newtrack',
+                            'uri': 'spotify:track:' + added_to_4_id,
+                        },
+                        'added_at': time() - 50000, # arbitrary
+                        'added_by': {
+                            'id': 'spotifyuser1'
+                        }
+                    }
+                ],
                 'limit': 100,
                 'offset': 0,
                 'total': 0
             },
-            { # playlist 4 - unchanged after checking for unauthorized additions
-                'items': [],
-                'limit': 100,
-                'offset': 0,
-                'total': 0
-            },
-            { # playlist 4 - unchanged after restoring unauthorized additions
+            { # playlist 4 - one addition was removed
                 'items': [],
                 'limit': 100,
                 'offset': 0,
@@ -396,17 +389,114 @@ LOG_CONFIG:
         ]
 
         api_mock.return_value.playlist_items = Mock(side_effect=playlist_items_responses)
-        api_mock.return_value.add_items_to_playlist = Mock()
+        api_mock.return_value.playlist_add_items = Mock()
         api_mock.return_value.playlist_remove_all_occurrences_of_items = Mock()
 
         with self.assertRaises(SystemExit) as sys_exit:
             main.main()
+
+        # use API mocks to test for correct interaction with external API
 
         api_mock.assert_called_once()
         self.assertEqual(os.environ['SPOTIPY_CLIENT_ID'], 'testuserclientid')
         self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
         self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
 
+        # since PROTECT_ALL=false, the only time all playlists are retrieved is for validation of
+        # the protected playlist list
+        self.assertEqual(api_mock.return_value.current_user_playlists.call_count, 1)
+
+        self.assertEqual(api_mock.return_value.playlist_items.call_count, 10)
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[1][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[2][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[3][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[4][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[5][0][0], pl_ids[2])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[6][0][0], pl_ids[2])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[7][0][0], pl_ids[2])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[8][0][0], pl_ids[3])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[9][0][0], pl_ids[3])
+
+        # two tracks should have been removed: one from playlist 1 and one from playlist 4
+        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_count, 2)
+        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[0][0][1], [ added_to_1_id ])
+        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[1][0][0], pl_ids[3])
+        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[1][0][1], [ added_to_4_id ])
+
+        # two tracks should have been restored: one from playlist 1 and one from playlist 3
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 2)
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][1], [ backed_up_items[0][1] ])
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[1][0][0], pl_ids[2])
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[1][0][1], [ backed_up_items[1][1] ])
+
+
+        # use backups to test for correct end-state
+
+        def get_backups(pl_id):
+            pl_backups = []
+            new_backup_files = os.listdir(self.test_backup_path)
+            for filename in new_backup_files:
+                if re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, filename) is not None:
+                    pl_backups.append(filename)
+            return pl_backups
+
+        all_pl_backups = [ get_backups(pl_id) for pl_id in pl_ids ]
+        for backups in all_pl_backups[:-2]:
+            self.assertEqual(len(backups), 1)
+        for backups in all_pl_backups[-2:]:
+            self.assertEqual(len(backups), 0)
+
+        def get_backup_data(filename):
+            try:
+                backup_file = open('%s/%s' % (self.test_backup_path, filename))
+                backup_info = json.loads(backup_file.read())
+                return backup_info
+            except Exception as err:
+                print(err)
+            finally:
+                if backup_file is not None:
+                    backup_file.close()
+
+        self.assertEqual(get_backup_data(all_pl_backups[0][0]), {
+            'name': pl_names[0],
+            'items': [
+                {
+                    'name': 'pl1track1',
+                    'uri': backed_up_items[0][0]
+                },
+                {
+                    'name': 'pl1track2',
+                    'uri': backed_up_items[0][1]
+                }
+            ]
+        })
+        self.assertEqual(get_backup_data(all_pl_backups[1][0]), {
+            'name': pl_names[1],
+            'items': []
+        })
+        self.assertEqual(get_backup_data(all_pl_backups[2][0]), {
+            'name': pl_names[2],
+            'items': [
+                {
+                    'name': 'pl3track2',
+                    'uri': backed_up_items[1][1]
+                }
+            ]
+        })
+        self.assertEqual(get_backup_data(all_pl_backups[3][0]), {
+            'name': pl_names[3],
+            'items': [
+            ]
+        })
+
+        # check program exited correctly
+
         self.assertEqual(sys_exit.exception.code, 0)
+
+
+
 if __name__ == '__main__':
     unittest.main()
