@@ -1,5 +1,7 @@
 # SpotifyAutoModerator
 ![Code Coverage Badge](https://raw.githubusercontent.com/omnimeta/SpotifyAutoModerator/main/coverage/badge.svg)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/omnimeta/SpotifyAutoModerator/graphs/commit-activity)
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/omnimeta/SpotifyAutoModerator/blob/master/LICENSE)
 
 Automated moderator for collaborative playlists on Spotify.
 
@@ -272,4 +274,4 @@ $> ./spautomod --loop
 
 The following are the current goals of the project:
 * add more complex integration tests;
-* vulnerability scanning of sourced libraries/packages.
+* version for Windows.

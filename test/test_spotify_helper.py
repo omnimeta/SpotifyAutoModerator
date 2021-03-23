@@ -123,7 +123,7 @@ class TestSpotifyHelper(unittest.TestCase):
         self.helper.get_all_collab_playlists('creator_id', api=None)
         preconfigured_api.current_user_playlists.assert_called()
 
-    def test_get_all_collab_playlists_returns_only_collaborative_playlists_and_in_correct_format(self):
+    def test_get_all_collab_playlists_returns_only_collaborative_playlists_owned_by_the_user_and_in_correct_format(self):
         response = {
             'items': [
                 {
@@ -136,6 +136,9 @@ class TestSpotifyHelper(unittest.TestCase):
             ],
             'total': 132
         }
+        response['items'][0]['collaborative'] = True # collaborative but owned by someone else
+        response['items'][0]['owner']['id'] = 'someotheruser'
+
         for item in range(130, 132):
             response['items'].append({
                 'uri': self.generate_playlist_uri(),

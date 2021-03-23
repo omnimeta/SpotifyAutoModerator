@@ -30,6 +30,7 @@ if [ -z "${1}" ]; then
   python3 -m coverage report
   python3 -m coverage html -d ${COVERAGE_DIR}
   save_coverage_badge
+  safety check -r requirements.txt
   exit ${TEST_AND_COVERAGE_EXIT_CODE}
 fi
 
@@ -37,4 +38,6 @@ ARGUMENTS=""
 for FILENAME in ${@}; do
   ARGUMENTS="${ARGUMENTS} test/${FILENAME}"
 done
+
 python3 -m unittest -v ${ARGUMENTS} 
+safety check -r requirements.txt

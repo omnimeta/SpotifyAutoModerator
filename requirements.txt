@@ -1,5 +1,6 @@
-pyyaml
-spotipy
-inputimeout
-coverage
-coverage-badge
+safet==1.10.3
+pyyaml==5.4.1
+spotipy==2.17.1
+inputimeout==1.0.4
+coverage==5.5
+coverage-badge==1.0.1
