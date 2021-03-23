@@ -157,7 +157,9 @@ class TestMain(unittest.TestCase):
         with self.assertRaises(SystemExit) as sys_exit:
             # run within SysExit context because main explicitly exits with code 0 after completion
             main.main()
+        self.assertEqual(len(integrity_mgr_obj.run.call_args[0]), 1)
         integrity_mgr_obj.run.assert_called_once_with(only_playlist)
+        self.assertEqual(len(playlist_cleaner_obj.run.call_args[0]), 1)
         playlist_cleaner_obj.run.assert_called_once_with(only_playlist)
 
 
@@ -200,7 +202,9 @@ class TestMain(unittest.TestCase):
         with self.assertRaises(SystemExit) as sys_exit:
             # run within SysExit context because main explicitly exits with code 0 after completion
             main.main()
+        self.assertEqual(len(integrity_mgr_obj.run.call_args[0]), 1)
         integrity_mgr_obj.run.assert_called_once_with(only_collab_playlists[0])
+        self.assertEqual(len(playlist_cleaner_obj.run.call_args[0]), 1)
         playlist_cleaner_obj.run.assert_called_once_with(only_collab_playlists[0])
 
 
@@ -247,11 +251,17 @@ class TestMain(unittest.TestCase):
             main.main()
 
         self.assertEqual(integrity_mgr_obj.run.call_count, 2)
+        self.assertEqual(len(integrity_mgr_obj.run.call_args_list[0][0]), 1)
         self.assertEqual(integrity_mgr_obj.run.call_args_list[0][0][0], only_playlist)
+
+        self.assertEqual(len(integrity_mgr_obj.run.call_args_list[1][0]), 1)
         self.assertEqual(integrity_mgr_obj.run.call_args_list[1][0][0], only_playlist)
+
         self.assertEqual(playlist_cleaner_obj.run.call_count, 2)
         self.assertEqual(playlist_cleaner_obj.run.call_args_list[0][0][0], only_playlist)
+        self.assertEqual(len(playlist_cleaner_obj.run.call_args_list[0][0]), 1)
         self.assertEqual(playlist_cleaner_obj.run.call_args_list[1][0][0], only_playlist)
+        self.assertEqual(len(playlist_cleaner_obj.run.call_args_list[1][0]), 1)
 
 
     @patch('src.main.PlaylistCleaner')

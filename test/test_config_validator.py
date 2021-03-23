@@ -110,13 +110,6 @@ class TestConfigValidator(unittest.TestCase):
         self.assertFalse(validator.validate_log_config())
 
         validator = ConfigValidator(log={
-            'FILE': 'file',
-            'FILE_LEVEL': 'error',
-            'CONSOLE_LEVEL': 'error'
-        })
-        self.assertFalse(validator.validate_log_config())
-
-        validator = ConfigValidator(log={
             'FORMAT': 'format',
             'FILE_LEVEL': 'error',
             'CONSOLE_LEVEL': 'error'

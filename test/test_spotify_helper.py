@@ -225,11 +225,17 @@ class TestSpotifyHelper(unittest.TestCase):
         items = [ { 'uri': self.generate_track_uri() } for i in range(0, 230) ]
         item_uris = [ item['uri'] for item in items ]
         self.helper.add_items_to_playlist(pl_id, items, api=mock_api)
+
         self.assertEqual(mock_api.playlist_add_items.call_count, 3)
+        self.assertEqual(len(mock_api.playlist_add_items.call_args_list[0][0]), 2)
         self.assertEqual(mock_api.playlist_add_items.call_args_list[0][0][0], pl_id)
         self.assertEqual(mock_api.playlist_add_items.call_args_list[0][0][1], item_uris[0:100])
+
+        self.assertEqual(len(mock_api.playlist_add_items.call_args_list[1][0]), 2)
         self.assertEqual(mock_api.playlist_add_items.call_args_list[1][0][0], pl_id)
         self.assertEqual(mock_api.playlist_add_items.call_args_list[1][0][1], item_uris[100:200])
+
+        self.assertEqual(len(mock_api.playlist_add_items.call_args_list[2][0]), 2)
         self.assertEqual(mock_api.playlist_add_items.call_args_list[2][0][0], pl_id)
         self.assertEqual(mock_api.playlist_add_items.call_args_list[2][0][1], item_uris[200:])
 

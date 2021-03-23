@@ -9,20 +9,11 @@ class PlaylistCleaner:
         self.config = config
         self.spotify_helper = SpotifyHelper(self.logger)
 
-    def run(self):
+    def run(self, playlist):
         self.logger.info('Initiating playlist scanning/cleaning procedire')
-        playlists_to_scan = self.config['PROTECTED_PLAYLISTS']
-        if self.config['PROTECT_ALL']:
-            playlists_to_scan = self.spotify_helper.get_all_collab_playlists(api=self.api)
-
-        for playlist in playlists_to_scan:
-            playlist_id = self.spotify_helper.get_playlist_id(playlist)
-            unauth_additions = self.find_unauthorized_additions(playlist_id, self.playlist_creator_id)
-            self.remove_playlist_items(playlist_id, unauth_additions)
-
-        self.logger.info('Completed playlist scanning/cleaning procedure')
-        self.logger.info('Another playlist scannning/cleaning run should start in roughly %d minutes'
-                         % self.config['FREQUENCY'])
+        playlist_id = self.spotify_helper.get_playlist_id(playlist)
+        unauth_additions = self.find_unauthorized_additions(playlist_id)
+        self.remove_playlist_items(playlist_id, unauth_additions)
 
 
     def find_unauthorized_additions(self, playlist_id):
@@ -116,6 +107,10 @@ class PlaylistCleaner:
             return None
 
         for playlist in self.config['PROTECTED_PLAYLISTS']:
-            if pl_uri == playlist['uri']:
-                return playlist
+            if len(playlist.keys()) != 1:
+                return None
+
+            for key, val in playlist.items():
+                if pl_uri == val['uri']:
+                    return val
         return None

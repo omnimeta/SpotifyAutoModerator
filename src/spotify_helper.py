@@ -17,15 +17,15 @@ class SpotifyHelper:
         scope = 'playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'
 
         self.logger.debug('Attempting to authenticate with Spotify. Requested scope: \'%s\'', scope)
-        spotify = None
+        api_client = None
         try:
-            spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+            api_client = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
         except Exception as err:
             self.logger.error('Failed to authenticate with Spotify. Error: \'%s\'', err)
             return None
 
-        if isinstance(spotify, spotipy.client.Spotify):
-            self.api = spotify
+        if isinstance(api_client, spotipy.client.Spotify):
+            self.api = api_client
             return self.api
 
         self.logger.error('Failed to authenticate with Spotify.')

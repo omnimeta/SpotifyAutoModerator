@@ -1,7 +1,7 @@
 import re
 import os
 import json
-from time import time
+from time import time, sleep
 from inputimeout import inputimeout, TimeoutOccurred
 from src.spotify_helper import SpotifyHelper
 
@@ -72,7 +72,7 @@ class IntegrityManager:
             still_in_playlist = False
 
             for current_item in current_items:
-                if backup_item['uri'] == current_item['uri']:
+                if backup_item['uri'] == current_item['track']['uri']:
                     still_in_playlist = True
                     break
             if not still_in_playlist:
@@ -112,6 +112,7 @@ class IntegrityManager:
         backup_file = open(backup_file_path, 'w')
         backup_file.write(json.dumps(backup))
         backup_file.close()
+        sleep(0.5) # for stability
         self.logger.info("Completed backup of playlist with ID \'%s\'", playlist_id)
 
 
@@ -178,7 +179,7 @@ class IntegrityManager:
         finally:
             backup_file.close()
 
-        return backup_info if self._backup_info_is_valid(backup_info) else None
+        return backup_info if self._backup_info_is_valid(backup_info, filename) else None
 
 
     def _backup_info_is_valid(self, backup_info, filename):

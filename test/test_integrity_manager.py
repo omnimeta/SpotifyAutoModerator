@@ -33,6 +33,11 @@ class TestIntegrityManager(unittest.TestCase):
         self.generate_track_uri = (
             lambda gen_id=self.generate_spotify_id: 'spotify:track:' + gen_id())
 
+        # also clear any files before starting for consistency (e.g., if other tests don't cleanup)
+        for filename in os.listdir(self.test_backup_path):
+            if re.search(filename, '^\.gitignore$') is None:
+                os.remove('%s/%s' % (self.test_backup_path, filename))
+
 
     def tearDown(self):
         for filename in os.listdir(self.test_backup_path):
@@ -56,6 +61,7 @@ class TestIntegrityManager(unittest.TestCase):
         self.manager.backup_playlist = Mock()
         self.manager.get_removals = Mock()
         self.manager.run({ 'uri': 'spotify:playlist:' + pl_id })
+        self.assertEqual(len(self.manager.backup_playlist.call_args[0]), 1)
         self.manager.backup_playlist.assert_called_once_with(pl_id)
         self.manager.get_removals.assert_not_called
 
@@ -85,7 +91,9 @@ class TestIntegrityManager(unittest.TestCase):
         self.manager.spotify_helper.add_items_to_playlist = Mock()
 
         self.manager.run({ 'uri': 'spotify:playlist:' + pl_id })
+        self.assertEqual(len(self.manager.get_removals.call_args[0]), 2)
         self.manager.get_removals.assert_called_once_with(pl_id, latest_backup)
+        self.assertEqual(len(self.manager.spotify_helper.add_items_to_playlist.call_args[0]), 2)
         self.manager.spotify_helper.add_items_to_playlist.assert_called_once_with(pl_id, unapproved)
 
 
@@ -111,6 +119,7 @@ class TestIntegrityManager(unittest.TestCase):
         self.manager.spotify_helper.add_items_to_playlist = Mock()
 
         self.manager.run({ 'uri': 'spotify:playlist:' + pl_id })
+        self.assertEqual(len(self.manager.backup_playlist.call_args[0]), 1)
         self.manager.backup_playlist.assert_called_once_with(pl_id)
         self.manager.manage_redundant_backups.assert_called_once_with(pl_id)
 
@@ -162,6 +171,7 @@ class TestIntegrityManager(unittest.TestCase):
         self.manager._load_backup_from_file = Mock(return_value='correct_return_val')
         self.assertEqual(self.manager.find_latest_backup(pl_id), 'correct_return_val')
         self.assertEqual(self.manager._load_backup_from_file.call_args[0][0], backups[-1]['filename'])
+        self.assertEqual(self.manager._load_backup_from_file.call_args[0][0], backups[-1]['filename'])
 
     def test_find_latest_backup_returns_none_if_the_playlist_has_no_backups(self):
         def create_blank_backup_file(pl_id):
@@ -187,7 +197,14 @@ class TestIntegrityManager(unittest.TestCase):
             'name': 'playlist_name',
             'items': [ { 'name': 'track%d' % num, 'uri': self.generate_track_uri() } for num in range(0, 5) ]
         }
-        self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=backup['items'][0:3])
+        self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=[
+            {
+                'track': {
+                    'name': track['name'],
+                    'uri': track['uri']
+                }
+            } for track in backup['items'][:3]
+        ])
         self.assertEqual(self.manager.get_removals(self.generate_spotify_id(), backup), backup['items'][3:])
 
 
@@ -211,14 +228,12 @@ class TestIntegrityManager(unittest.TestCase):
         })
         self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=[])
         self.manager.backup_playlist(pl_id)
-        files = os.listdir(self.test_backup_path)
-        num_backups = 0
-        print(files)
-        for fl in files:
+        relevant_files = []
+        for fl in os.listdir(self.test_backup_path):
             if re.search('^[A-Za-z0-9]{22}_[0-9]{10}\.[0-9]+\.backup\.json$', fl) is not None:
-                num_backups += 1
-        self.assertEqual(num_backups, 1)
-        self.assertIsNotNone(re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, files[0]))
+                relevant_files.append(fl)
+        self.assertEqual(len(relevant_files), 1)
+        self.assertIsNotNone(re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, relevant_files[0]))
 
 
     def test_backup_playlist_saves_playlist_backup_in_correct_format(self):
@@ -242,8 +257,11 @@ class TestIntegrityManager(unittest.TestCase):
         ]
         self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=items)
         self.manager.backup_playlist(pl_id)
-        backup_files = os.listdir(self.test_backup_path)
-        backup_file = open('%s/%s' % (self.test_backup_path, backup_files[0]), 'r')
+        relevant_backups = []
+        for backup in os.listdir(self.test_backup_path):
+            if re.search('^[A-Za-z0-9]{22}_[0-9]{10}\.[0-9]+\.backup\.json$', backup) is not None:
+                relevant_backups.append(backup)
+        backup_file = open('%s/%s' % (self.test_backup_path, relevant_backups[0]), 'r')
         backup_content = json.loads(backup_file.read())
         backup_file.close()
         self.assertEqual({
@@ -431,12 +449,15 @@ class TestIntegrityManager(unittest.TestCase):
                 'uri': self.generate_track_uri()
             }
         ]
-        filename = create_backup_file(self.generate_spotify_id(), 'playlist name', items)
-        self.manager._backup_info_is_valid = Mock(return_value=True)
-        self.assertEqual(self.manager._load_backup_from_file(filename), {
+        backup_info = {
             'name': 'playlist name',
             'items': items
-        })
+        }
+        filename = create_backup_file(self.generate_spotify_id(), 'playlist name', items)
+        self.manager._backup_info_is_valid = Mock(return_value=True)
+        self.assertEqual(self.manager._load_backup_from_file(filename), backup_info)
+        self.manager._backup_info_is_valid.assert_called_once_with(backup_info, filename)
+        self.assertEqual(len(self.manager._backup_info_is_valid.call_args[0]), 2)
 
 
     def test_load_backup_from_file_returns_none_if_the_imported_backup_is_not_valid(self):
@@ -511,9 +532,12 @@ class TestIntegrityManager(unittest.TestCase):
             backups.append(create_backup_file(pl_id, 'playlist name', []))
         self.manager.manage_redundant_backups(pl_id)
 
-        remaining_backups = os.listdir(self.test_backup_path)
+        relevant_backups = []
+        for backup in os.listdir(self.test_backup_path):
+            if re.search('^[A-Za-z0-9]{22}_[0-9]{10}\.[0-9]+\.backup\.json$', backup) is not None:
+                relevant_backups.append(backup)
         for backup in backups:
-            self.assertTrue(backup in remaining_backups)
+            self.assertTrue(backup in relevant_backups)
 
 
     def test_manage_redundant_backups_deletes_oldest_backups_until_the_number_remaining_is_equal_to_the_maximum(self):
@@ -534,11 +558,14 @@ class TestIntegrityManager(unittest.TestCase):
             backups.append(create_backup_file(pl_id, 'playlist name', []))
         self.manager.manage_redundant_backups(pl_id)
 
-        remaining_backups = os.listdir(self.test_backup_path)
+        relevant_backups = []
+        for backup in os.listdir(self.test_backup_path):
+            if re.search('^[A-Za-z0-9]{22}_[0-9]{10}\.[0-9]+\.backup\.json$', backup) is not None:
+                relevant_backups.append(backup)
         for backup in backups[0:2]:
-            self.assertFalse(backup in remaining_backups)
+            self.assertFalse(backup in relevant_backups)
         for backup in backups[2:]:
-            self.assertTrue(backup in remaining_backups)
+            self.assertTrue(backup in relevant_backups)
 
 
     # ----- Tests for IntegrityManager._user_approves_removal ----- #

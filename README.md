@@ -183,22 +183,22 @@ What does this example mean?
   * cannot add tracks to `ProgressiveJazzFusion` because the user is not whitelisted in `ProgressiveJazzFusion`;
   * cannot add tracks to `ProkofievConcertoMix` because the user is not whitelisted in `ProkofievConcertoMix`;
   * can add tracks to `Instrudjental` because the playlist has no whitelist/blacklist, the global mode is `blacklist`, and the user is not globally blacklisted;
-  * can add tracks to `ModernAlternativeRnB` because the user is blacklisted in the `ModernAlternativeRnB`
+  * can add tracks to `ModernAlternativeRnB` because the user is blacklisted in `ModernAlternativeRnB`.
 * `spotifyuser2`:
   * cannot add tracks to `ProgressiveJazzFusion` because the user is not whitelisted in `ProgressiveJazzFusion`;
   * can add tracks to `ProkofievConcertoMix` because the user is whitelisted in `ProkofievConcertoMix`;
   * cannot add tracks to `Instrudjental` because the playlist has no whitelist/blacklist, the global mode is `blacklist`, and the user is globally blacklisted;
-  * can add tracks to `ModernAlternativeRnB` because the user is not blacklisted in the `ModernAlternativeRnB`
+  * can add tracks to `ModernAlternativeRnB` because the user is not blacklisted in `ModernAlternativeRnB`.
 * `spotifyuser3`:
   * can add tracks to `ProgressiveJazzFusion` because the user is whitelisted in `ProgressiveJazzFusion`;
   * cannot add tracks to `ProkofievConcertoMix` because the user is not whitelisted in `ProkofievConcertoMix`;
   * can add tracks to `Instrudjental` because the playlist has no whitelist/blacklist, the global mode is `blacklist`, and the user is not globally blacklisted;
-  * can add tracks to `ModernAlternativeRnB` because the user is not blacklisted in the `ModernAlternativeRnB`
+  * can add tracks to `ModernAlternativeRnB` because the user is not blacklisted in `ModernAlternativeRnB`.
 * `spotifyuser4`:
   * cannot add tracks to `ProgressiveJazzFusion` because the user is not whitelisted in `ProgressiveJazzFusion`;
   * cannot add tracks to `ProkofievConcertoMix` because the user is not whitelisted in `ProkofievConcertoMix`;
   * can add tracks to `Instrudjental` because the playlist has no whitelist/blacklist, the global mode is `blacklist`, and the user is not globally blacklisted;
-  * cannot add tracks to `ModernAlternativeRnB` because the user is blacklisted in the `ModernAlternativeRnB`
+  * cannot add tracks to `ModernAlternativeRnB` because the user is blacklisted in `ModernAlternativeRnB`.
   
 
 The structure of the following **simple example** is likely to be applicable to many users:
@@ -265,5 +265,5 @@ $> ./spautomod --loop
 ## Project Roadmap
 
 The following are the current goals of the project:
-* addition of a set of integration tests;
+* add more complex integration tests;
 * vulnerability scanning of sourced libraries/packages.

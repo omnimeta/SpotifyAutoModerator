@@ -24,86 +24,31 @@ class TestPlaylistCleaner(unittest.TestCase):
 
     # ----- Tests for PlaylistCleaner.run ----- #
 
-    @patch('src.playlist_cleaner.SpotifyHelper')
-    def test_run_scans_all_collaborative_playlists_if_protect_all_is_enabled(self, helper_mock):
-        mock_api = spotipy.client.Spotify()
-        config = {
-            'PROTECT_ALL': True,
-            'PROTECTED_PLAYLISTS': [ { 'uri': self.generate_playlist_uri() } ],
-            'FREQUENCY': 90
-        }
-        spotify_helper = SpotifyHelper(self.test_logger)
-        pl_id = self.generate_spotify_id()
-        stubbed_all_collab_playlists = [ {'uri': 'spotify:playlist:' + pl_id } ]
-        spotify_helper.get_all_collab_playlists = Mock(return_value=stubbed_all_collab_playlists)
-        helper_mock.return_value = spotify_helper
-        cleaner = PlaylistCleaner(self.test_logger, mock_api, 'playlist_owner', config)
-        cleaner.find_unauthorized_additions = Mock(return_value=[])
-        cleaner.remove_playlist_items = Mock()
-        cleaner.run()
-        cleaner.find_unauthorized_additions.assert_called_once_with(pl_id, 'playlist_owner')
-
-
-    def test_run_scans_all_only_protected_playlists_if_protect_all_is_disabled(self):
-        mock_api = spotipy.client.Spotify()
-        pl_ids = (self.generate_spotify_id(), self.generate_spotify_id())
-        config = {
-            'PROTECT_ALL': False,
-            'PROTECTED_PLAYLISTS': [
-                { 'uri': 'spotify:playlist:' + pl_ids[0] },
-                { 'uri': 'spotify:playlist:' + pl_ids[1] }
-            ],
-            'FREQUENCY': 90
-        }
-        cleaner = PlaylistCleaner(self.test_logger, mock_api, 'playlist_owner', config)
-        cleaner.find_unauthorized_additions = Mock(return_value=[])
-        cleaner.remove_playlist_items = Mock()
-        cleaner.run()
-        self.assertEqual(cleaner.find_unauthorized_additions.call_count, 2)
-        self.assertEqual(cleaner.find_unauthorized_additions.call_args_list[0][0][0], pl_ids[0])
-        self.assertEqual(cleaner.find_unauthorized_additions.call_args_list[0][0][1], 'playlist_owner')
-        self.assertEqual(cleaner.find_unauthorized_additions.call_args_list[1][0][0], pl_ids[1])
-        self.assertEqual(cleaner.find_unauthorized_additions.call_args_list[1][0][1], 'playlist_owner')
-
-
     def test_run_removes_only_unauthorized_items(self):
         mock_api = spotipy.client.Spotify()
-        pl_ids = (self.generate_spotify_id(), self.generate_spotify_id())
+        pl_id = self.generate_spotify_id()
         config = {
             'PROTECT_ALL': False,
             'PROTECTED_PLAYLISTS': [
-                { 'uri': 'spotify:playlist:' + pl_ids[0] },
-                { 'uri': 'spotify:playlist:' + pl_ids[1] }
-            ],
-            'FREQUENCY': 90
+                { 'uri': 'spotify:playlist:' + pl_id }
+            ]
         }
         cleaner = PlaylistCleaner(self.test_logger, mock_api, 'playlist_owner', config)
         unauth_items = [
-            [
-                {
-                    'name': 'unauth_item_1',
-                    'uri': self.generate_track_uri()
-                },
-                {
-                    'name': 'unauth_item_2',
-                    'uri': self.generate_track_uri()
-                }
-            ],
-            [
-                {
-                    'name': 'unauth_item_3',
-                    'uri': self.generate_track_uri()
-                }
-            ]
+            {
+                'name': 'unauth_item_1',
+                'uri': self.generate_track_uri()
+            },
+            {
+                'name': 'unauth_item_2',
+                'uri': self.generate_track_uri()
+            }
         ]
-        cleaner.find_unauthorized_additions = Mock(side_effect=unauth_items)
+        cleaner.find_unauthorized_additions = Mock(return_value=unauth_items)
         cleaner.remove_playlist_items = Mock()
-        cleaner.run()
-        self.assertEqual(cleaner.remove_playlist_items.call_count, 2)
-        self.assertEqual(cleaner.remove_playlist_items.call_args_list[0][0][0], pl_ids[0])
-        self.assertEqual(cleaner.remove_playlist_items.call_args_list[0][0][1], unauth_items[0])
-        self.assertEqual(cleaner.remove_playlist_items.call_args_list[1][0][0], pl_ids[1])
-        self.assertEqual(cleaner.remove_playlist_items.call_args_list[1][0][1], unauth_items[1])
+        cleaner.run({ 'uri': 'spotify:playlist:' + pl_id})
+        self.assertEqual(len(cleaner.find_unauthorized_additions.call_args[0]), 1)
+        cleaner.find_unauthorized_additions.called_once_with(pl_id)
 
 
     # ----- Tests for PlaylistCleaner.find_unauthorized_additions ----- #
@@ -146,8 +91,9 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_id = self.generate_spotify_id()
         pl_config = {
             'PROTECTED_PLAYLISTS': [
-                {
-                    'uri': 'spotify:playlist' + pl_id
+                {   'myplaylist': {
+                        'uri': 'spotify:playlist' + pl_id
+                    }
                 }
             ]
         }
@@ -160,8 +106,10 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'blacklist': []
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'blacklist': []
+                    }
                 }
             ]
         }
@@ -174,8 +122,10 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'blacklist': [ 'adder_id' ]
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'blacklist': [ 'adder_id' ]
+                    }
                 }
             ]
         }
@@ -188,8 +138,10 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'whitelist': [ 'adder_id' ]
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'whitelist': [ 'adder_id' ]
+                    }
                 }
             ]
         }
@@ -202,8 +154,10 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'whitelist': []
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'whitelist': []
+                    }
                 }
             ]
         }
@@ -217,9 +171,11 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'blacklist': [],
-                    'whitelist': [ 'adder_id' ]
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'blacklist': [],
+                        'whitelist': [ 'adder_id' ]
+                    }
                 }
             ]
         }
@@ -233,9 +189,11 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'blacklist': [ 'adder_id' ],
-                    'whitelist': [ 'adder_id' ]
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'blacklist': [ 'adder_id' ],
+                        'whitelist': [ 'adder_id' ]
+                    }
                 }
             ]
         }
@@ -249,9 +207,11 @@ class TestPlaylistCleaner(unittest.TestCase):
         pl_config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'blacklist': [],
-                    'whitelist': []
+                    'myplaylist': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'blacklist': [],
+                        'whitelist': []
+                    }
                 }
             ]
         }
@@ -387,12 +347,15 @@ class TestPlaylistCleaner(unittest.TestCase):
 
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_count, 3)
 
+        self.assertEqual(len(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[0][0]), 2)
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[0][0][0], pl_id)
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[0][0][1], item_ids[0:100])
 
+        self.assertEqual(len(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[1][0]), 2)
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[1][0][0], pl_id)
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[1][0][1], item_ids[100:200])
 
+        self.assertEqual(len(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[2][0]), 2)
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[2][0][0], pl_id)
         self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[2][0][1], item_ids[200:230])
 
@@ -400,7 +363,23 @@ class TestPlaylistCleaner(unittest.TestCase):
     # ----- Tests for PlaylistCleaner._get_playlist_config ----- #
     
     def test_get_playlist_config_returns_none_if_playlist_has_no_config(self):
-        config = { 'PROTECTED_PLAYLISTS': [ { 'uri': self.generate_playlist_uri() } ] }
+        config = { 'PROTECTED_PLAYLISTS': [ { 'myplaylist': { 'uri': self.generate_playlist_uri() } } ] }
+        cleaner = PlaylistCleaner(self.test_logger, self.test_api, 'owner_id', config)
+        different_playlist = self.generate_spotify_id()
+        self.assertIsNone(cleaner._get_playlist_config(different_playlist))
+
+
+    def test_get_playlist_config_returns_none_if_playlist_has_two_labels(self):
+        config = {
+            'PROTECTED_PLAYLISTS': [
+                {
+                    'myplaylist':{
+                        'uri': self.generate_playlist_uri()
+                    },
+                    'somehowthesameplaylist': {}
+                }
+            ]
+        }
         cleaner = PlaylistCleaner(self.test_logger, self.test_api, 'owner_id', config)
         different_playlist = self.generate_spotify_id()
         self.assertIsNone(cleaner._get_playlist_config(different_playlist))
@@ -412,17 +391,21 @@ class TestPlaylistCleaner(unittest.TestCase):
         config = {
             'PROTECTED_PLAYLISTS': [
                 {
-                    'uri': other_pl_uri,
-                    'other_config': '...'
+                    'myplaylist1': {
+                        'uri': other_pl_uri,
+                        'other_config': '...'
+                    }
                 },
                 {
-                    'uri': 'spotify:playlist:' + pl_id,
-                    'other_config': 'other relevant config data'
+                    'myplaylist2': {
+                        'uri': 'spotify:playlist:' + pl_id,
+                        'other_config': 'other relevant config data'
+                    }
                 }
             ]
         }
         cleaner = PlaylistCleaner(self.test_logger, self.test_api, 'owner_id', config)
-        self.assertEqual(cleaner._get_playlist_config(pl_id), config['PROTECTED_PLAYLISTS'][-1])
+        self.assertEqual(cleaner._get_playlist_config(pl_id), config['PROTECTED_PLAYLISTS'][1]['myplaylist2'])
 
 
 

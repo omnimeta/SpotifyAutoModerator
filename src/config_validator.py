@@ -40,7 +40,6 @@ class ConfigValidator:
     def validate_log_config(self):
         required = [
             'FILE',
-            'FORMAT',
             'FILE_LEVEL',
             'CONSOLE_LEVEL'
         ]
