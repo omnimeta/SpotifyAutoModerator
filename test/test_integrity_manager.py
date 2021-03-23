@@ -260,13 +260,15 @@ class TestIntegrityManager(unittest.TestCase):
                 'track': {
                     'name': 'track1',
                     'uri': self.generate_track_uri()
-                }
+                },
+                'position': 1
             },
             {
                 'track': {
                     'name': 'track2',
                     'uri': self.generate_track_uri()
-                }
+                },
+                'position': 2
             }
         ]
         self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=items)
@@ -284,7 +286,8 @@ class TestIntegrityManager(unittest.TestCase):
                 {
 
                     'name': item['track']['name'],
-                    'uri': item['track']['uri']
+                    'uri': item['track']['uri'],
+                    'position': item['position']
                 } for item in items
             ]
         }, backup_content)

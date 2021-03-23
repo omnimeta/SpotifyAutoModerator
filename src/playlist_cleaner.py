@@ -29,7 +29,8 @@ class PlaylistCleaner:
                     'name': item['track']['name'],
                     'uri': item['track']['uri'],
                     'added_at': item['added_at'],
-                    'added_by': item['added_by']['id']
+                    'added_by': item['added_by']['id'],
+                    'position': item['position']
                 })
 
         pl_details = self.api.playlist(playlist_id, fields='name')
@@ -41,7 +42,12 @@ class PlaylistCleaner:
 
     def remove_playlist_items(self, playlist_id, items):
         pl_details = self.api.playlist(playlist_id, fields='name')
-        item_ids = [ self.spotify_helper.get_track_id(item['uri']) for item in items ]
+        items_with_pos = [
+            {
+                'uri': item['uri'],
+                'positions': [ item['position'] ]
+            } for item in items
+        ]
         item_limit = 100
         lower_bound = 0
         upper_bound = 100
@@ -49,12 +55,12 @@ class PlaylistCleaner:
 
         self._log_playlist_item_removal(pl_details['name'], items)
         while more_to_process:
-            more_to_process = upper_bound < len(item_ids)
-            self.api.playlist_remove_all_occurrences_of_items(playlist_id, item_ids[lower_bound:upper_bound])
+            more_to_process = upper_bound < len(items_with_pos)
+            self.api.playlist_remove_specific_occurrences_of_items(playlist_id, items_with_pos[lower_bound:upper_bound])
             lower_bound = upper_bound
             upper_bound = (lower_bound + item_limit
-                        if lower_bound + item_limit < len(item_ids)
-                        else len(item_ids))
+                        if lower_bound + item_limit < len(items_with_pos)
+                        else len(items_with_pos))
 
 
     def playlist_addition_is_authorized(self, adder_id, playlist_id):
@@ -99,7 +105,7 @@ class PlaylistCleaner:
 
     def _log_playlist_item_removal(self, playlist_name, items):
         for item in items:
-            self.logger.info("REMOVING: `%s` added by user `%s` at %s (URI: %s) from playlist `%s``"
+            self.logger.info('REMOVING: `%s` added by user `%s` at %s (URI: %s) from playlist \'%s\''
                              % (item['name'], item['added_by'], item['added_at'], item['uri'], playlist_name))
 
     def _get_playlist_config(self, playlist_id):

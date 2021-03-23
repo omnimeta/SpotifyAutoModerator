@@ -316,8 +316,9 @@ class TestSpotifyHelper(unittest.TestCase):
                     'name': 'track_name'
                 },
                 'added_at': 'added_at_timestamp',
-                'added_by': { 'id': self.generate_spotify_id() }
-            } for i in range(0, 230)
+                'added_by': { 'id': self.generate_spotify_id() },
+                'position': index
+            } for index in range(0, 230)
         ]
         mock_api = spotipy.client.Spotify()
         mock_api.playlist_items = Mock(side_effect=[

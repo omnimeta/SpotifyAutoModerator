@@ -260,7 +260,8 @@ LOG_CONFIG:
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
                             'id': 'friendaccount1'
-                        }
+                        },
+                        'position': 0
                     },
                     { # this item was recently added (should be unauthorized)
                         'track': {
@@ -270,7 +271,8 @@ LOG_CONFIG:
                         'added_at': time() - 2000, # arbitrary
                         'added_by': {
                             'id': 'unknownspotifyuser'
-                        }
+                        },
+                        'position': 1
                     }
                     # the other item that was in the playlist before was removed without approval
                 ],
@@ -288,7 +290,8 @@ LOG_CONFIG:
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
                             'id': 'friendaccount1'
-                        }
+                        },
+                        'position': 0
                     }
                 ],
                 'limit': 100,
@@ -305,7 +308,8 @@ LOG_CONFIG:
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
                             'id': 'friendaccount1'
-                        }
+                        },
+                        'position': 0
                     },
                     { # this item was restored
                         'track': {
@@ -315,7 +319,8 @@ LOG_CONFIG:
                         'added_at': time(), # arbitrary
                         'added_by': {
                             'id': 'testuser'
-                        }
+                        },
+                        'position': 1
                     }
                 ],
                 'limit': 100,
@@ -356,12 +361,13 @@ LOG_CONFIG:
                         'added_at': time(), # arbitrary
                         'added_by': {
                             'id': 'testuser'
-                        }
+                        },
+                        'position': 0
                     }
                 ],
                 'limit': 100,
                 'offset': 0,
-                'total': 0
+                'total': 1
             },
             { # playlist 4
                 'items': [
@@ -373,12 +379,13 @@ LOG_CONFIG:
                         'added_at': time() - 50000, # arbitrary
                         'added_by': {
                             'id': 'spotifyuser1'
-                        }
+                        },
+                        'position': 0
                     }
                 ],
                 'limit': 100,
                 'offset': 0,
-                'total': 0
+                'total': 1
             },
             { # playlist 4 - one addition was removed
                 'items': [],
@@ -390,7 +397,7 @@ LOG_CONFIG:
 
         api_mock.return_value.playlist_items = Mock(side_effect=playlist_items_responses)
         api_mock.return_value.playlist_add_items = Mock()
-        api_mock.return_value.playlist_remove_all_occurrences_of_items = Mock()
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items = Mock()
 
         with self.assertRaises(SystemExit) as sys_exit:
             main.main()
@@ -419,11 +426,23 @@ LOG_CONFIG:
         self.assertEqual(api_mock.return_value.playlist_items.call_args_list[9][0][0], pl_ids[3])
 
         # two tracks should have been removed: one from playlist 1 and one from playlist 4
-        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_count, 2)
-        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[0][0][0], pl_ids[0])
-        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[0][0][1], [ added_to_1_id ])
-        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[1][0][0], pl_ids[3])
-        self.assertEqual(api_mock.return_value.playlist_remove_all_occurrences_of_items.call_args_list[1][0][1], [ added_to_4_id ])
+        self.assertEqual(api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_count, 2)
+        self.assertEqual(api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(
+            api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_args_list[0][0][1], [
+                {
+                    'uri': 'spotify:track:' + added_to_1_id,
+                    'positions': [ 1 ]
+                }
+            ])
+        self.assertEqual(api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_args_list[1][0][0], pl_ids[3])
+        self.assertEqual(
+            api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_args_list[1][0][1], [
+                {
+                    'uri': 'spotify:track:' + added_to_4_id,
+                    'positions': [ 0 ]
+                }
+            ])
 
         # two tracks should have been restored: one from playlist 1 and one from playlist 3
         self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 2)
@@ -465,11 +484,13 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': 'pl1track1',
-                    'uri': backed_up_items[0][0]
+                    'uri': backed_up_items[0][0],
+                    'position': 0
                 },
                 {
                     'name': 'pl1track2',
-                    'uri': backed_up_items[0][1]
+                    'uri': backed_up_items[0][1],
+                    'position': 1
                 }
             ]
         })
@@ -482,8 +503,9 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': 'pl3track2',
-                    'uri': backed_up_items[1][1]
-                }
+                    'uri': backed_up_items[1][1],
+                    'position': 0
+                },
             ]
         })
         self.assertEqual(get_backup_data(all_pl_backups[3][0]), {

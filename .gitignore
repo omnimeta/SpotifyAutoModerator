@@ -1,7 +1,11 @@
 !.gitignore
 .cache
 .coverage
+data/config.yaml
+!data/logs
 data/logs/*
+!data/backups
+data/backups/*
 */**/__pycache__
 
 !coverage/

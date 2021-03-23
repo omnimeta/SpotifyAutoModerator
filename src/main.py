@@ -107,12 +107,13 @@ def setup_logger(config):
     file_handler.setLevel(file_log_level)
     file_handler.set_name('file_handler')
     file_handler.setFormatter(formatter)
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(stream=sys.stdout)
     console_handler.set_name('console_handler')
     console_handler.setLevel(console_log_level)
     console_handler.setFormatter(formatter)
 
     logger = logging.getLogger('spautomod')
+    logger.setLevel('DEBUG')
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
     return logger

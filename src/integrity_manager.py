@@ -99,7 +99,8 @@ class IntegrityManager:
         for item in playlist_items:
             formatted_items.append({
                 'name': item['track']['name'],
-                'uri': item['track']['uri']
+                'uri': item['track']['uri'],
+                'position': item['position']
             })
 
         backup = {

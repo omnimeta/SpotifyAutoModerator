@@ -62,8 +62,9 @@ class TestPlaylistCleaner(unittest.TestCase):
                     'name': 'track_name'
                 },
                 'added_at': 'added_at_timestamp',
-                'added_by': { 'id': self.generate_spotify_id() }
-            } for i in range(0, 200)
+                'added_by': { 'id': self.generate_spotify_id() },
+                'position': index
+            } for index in range(0, 200)
         ]
         mock_api = spotipy.client.Spotify()
         mock_api.playlist = Mock(return_value={ 'name': 'playlist_name' })
@@ -330,34 +331,41 @@ class TestPlaylistCleaner(unittest.TestCase):
     def test_remove_playlist_items_processes_removes_items_in_blocks_of_100_items(self):
         mock_api = spotipy.client.Spotify()
         mock_api.playlist = Mock(return_value={ 'name': 'Playlist Name' })
-        mock_api.playlist_remove_all_occurrences_of_items = Mock()
+        mock_api.playlist_remove_specific_occurrences_of_items = Mock()
         pl_id = self.generate_spotify_id()
         cleaner = PlaylistCleaner(self.test_logger, mock_api, 'owner_id', {})
         item_ids = [ self.generate_spotify_id() for i in range(0, 230) ]
         items = [
             {
-                'uri': 'spotify:track:' + item_id,
-                'name': item_id,
+                'uri': 'spotify:track:' + item_ids[index],
+                'name': item_ids[index],
                 'added_by': 'adder',
-                'added_at': 'date added'
+                'added_at': 'date added',
+                'position': index
 
-            } for item_id in item_ids
+            } for index in range(0, len(item_ids))
+        ]
+        expected_removed = [
+            {
+                'uri': item['uri'],
+                'positions': [ item['position'] ]
+            } for item in items
         ]
         cleaner.remove_playlist_items(pl_id, items)
 
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_count, 3)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_count, 3)
 
-        self.assertEqual(len(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[0][0]), 2)
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[0][0][0], pl_id)
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[0][0][1], item_ids[0:100])
+        self.assertEqual(len(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[0][0]), 2)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[0][0][0], pl_id)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[0][0][1], expected_removed[0:100])
 
-        self.assertEqual(len(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[1][0]), 2)
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[1][0][0], pl_id)
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[1][0][1], item_ids[100:200])
+        self.assertEqual(len(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[1][0]), 2)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[1][0][0], pl_id)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[1][0][1], expected_removed[100:200])
 
-        self.assertEqual(len(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[2][0]), 2)
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[2][0][0], pl_id)
-        self.assertEqual(mock_api.playlist_remove_all_occurrences_of_items.call_args_list[2][0][1], item_ids[200:230])
+        self.assertEqual(len(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[2][0]), 2)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[2][0][0], pl_id)
+        self.assertEqual(mock_api.playlist_remove_specific_occurrences_of_items.call_args_list[2][0][1], expected_removed[200:230])
 
 
     # ----- Tests for PlaylistCleaner._get_playlist_config ----- #
