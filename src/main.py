@@ -77,7 +77,7 @@ def moderate_playlists(logger, api_client, username, playlist_config):
             playlist_cleaner.run(playlist)
             integrity_manager.run(playlist)
 
-    if '--loop' in sys.argv:
+    if '--loop' in sys.argv or '-l' in sys.argv:
         # For termination of loop mode, the idea is: delays between loop iterations are implemented
         # by a timeboxed attempt to  get user input (from stdin) in order to allow the user to
         # terminate the program loop without needing to send a kill signal
