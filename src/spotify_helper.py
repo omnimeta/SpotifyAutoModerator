@@ -71,7 +71,7 @@ class SpotifyHelper:
             response = api.playlist_items(playlist_id, limit=item_limit, offset=offset, fields=fields)
             for index in range(0, len(response['items'])):
                 item = response['items'][index]
-                item['position'] = index
+                item['position'] = offset + index
                 items.append(item)
             more_to_process = len(response['items']) == item_limit
             offset += item_limit
