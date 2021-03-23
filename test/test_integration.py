@@ -184,8 +184,8 @@ LOG_CONFIG:
             backup_file.close()
             return backup_file_path
 
-        pl_ids = [ 'xxxxxxxxxxxxxxxxxxxxx%d' % (pl_num + 1) for pl_num in range(0, 6) ]
-        pl_names = [ 'playlist%d' % (pl_num + 1) for pl_num in range(0, 6) ]
+        pl_ids = [ 'xxxxxxxxxxxxxxxxxxxxx%d' % (pl_num + 1) for pl_num in range(0, 7) ]
+        pl_names = [ 'playlist%d' % (pl_num + 1) for pl_num in range(0, 7) ]
 
         backed_up_items = ([
             self.generate_track_uri() for i in range(0, 2) # items for playlist 1
@@ -224,14 +224,18 @@ LOG_CONFIG:
                         'collaborative': True,
                         'uri': 'spotify:playlist:' + pl_ids[pl_num],
                         'id': pl_ids[pl_num],
-                        'name': pl_names[pl_num]
+                        'name': pl_names[pl_num],
+                        'owner': {
+                            'id': 'testuser'
+                        }
                     } for pl_num in range(0, len(pl_ids))
                 ],
                 'limit': limit,
                 'offset': offset,
-                'total': 6
+                'total': 7
             }
-            playlists['items'][-1]['collaborative'] = False
+            playlists['items'][-2]['collaborative'] = False
+            playlists['items'][-1]['owner']['id'] = 'adifferentuser'
             return playlists
         api_mock.return_value.current_user_playlists = Mock(side_effect=current_user_playlists)
 
@@ -463,9 +467,9 @@ LOG_CONFIG:
             return pl_backups
 
         all_pl_backups = [ get_backups(pl_id) for pl_id in pl_ids ]
-        for backups in all_pl_backups[:-2]:
+        for backups in all_pl_backups[:-3]:
             self.assertEqual(len(backups), 1)
-        for backups in all_pl_backups[-2:]:
+        for backups in all_pl_backups[-3:]:
             self.assertEqual(len(backups), 0)
 
         def get_backup_data(filename):

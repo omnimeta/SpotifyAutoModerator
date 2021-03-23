@@ -32,7 +32,7 @@ class SpotifyHelper:
         return None
 
 
-    def get_all_collab_playlists(self, api=None):
+    def get_all_collab_playlists(self, creator_id, api=None):
         if not isinstance(api, spotipy.client.Spotify):
             api = self.api
         if not isinstance(api, spotipy.client.Spotify):
@@ -47,7 +47,7 @@ class SpotifyHelper:
         while more_to_process:
             response = api.current_user_playlists(limit=item_limit, offset=last_checked)
             for playlist in response['items']:
-                if playlist['collaborative']:
+                if playlist['collaborative'] and playlist['owner']['id'] == creator_id:
                     collaborative_playlists.append({ 'uri': playlist['uri'] })
 
             more_to_process = len(response['items']) == item_limit

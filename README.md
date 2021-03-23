@@ -98,7 +98,7 @@ When the application is run in loop mode, **`DELAY_BETWEEN_SCANS`** determines h
 **NOTE**: remember, to acquire the username of a Spotify user, go to their user page and copy their Spotify URI. You can then retrieve the ID from the end of the URI (after `spotify:user:`). _DO NOT_ simply use the user's display name because this may not match their ID.
 
 
-#### Playlist-Specific Configuration
+#### Playlist-specific Configuration
 
 The playlist-specific configuration is represented by the list `PLAYLIST_CONFIG.PROTECTED_PLAYLISTS` which can be found under the aforementioned global configuration in `data/config.yaml`.
 The following is an _example_ of a playlist-specific configuration:

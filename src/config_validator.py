@@ -166,7 +166,7 @@ class ConfigValidator:
             return False
 
         helper = SpotifyHelper(self.logger, api=api_client)
-        collab_playlists = helper.get_all_collab_playlists()
+        collab_playlists = helper.get_all_collab_playlists(self.account['USERNAME'])
         collab_pl_uris = [ pl['uri'] for pl in collab_playlists ]
 
         for playlist in self.playlist['PROTECTED_PLAYLISTS']:

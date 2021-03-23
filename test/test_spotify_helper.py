@@ -88,27 +88,39 @@ class TestSpotifyHelper(unittest.TestCase):
 
     def test_get_all_collab_playlists_returns_none_if_no_api_clients_are_given_or_configured(self):
         self.helper.api = None
-        self.assertEqual(self.helper.get_all_collab_playlists(api=None), None)
+        self.assertEqual(self.helper.get_all_collab_playlists('creator_id', api=None), None)
 
 
     def test_get_all_collab_playlists_uses_api_client_received_as_argument_instead_of_preconfigured_client(self):
-        stubbed_response = { 'items': [], 'total': 0 }
+        stubbed_response = {
+            'items': [],
+            'owner': {
+                'id': 'creator_id'
+            },
+            'total': 0
+        }
         preconfigured_api = spotipy.client.Spotify()
         preconfigured_api.current_user_playlists = Mock(return_value=stubbed_response)
         given_api = spotipy.client.Spotify()
         given_api.current_user_playlists = Mock(return_value=stubbed_response)
 
         self.helper.api = preconfigured_api
-        self.helper.get_all_collab_playlists(api=given_api)
+        self.helper.get_all_collab_playlists('creator_id', api=given_api)
         preconfigured_api.current_user_playlists.assert_not_called()
         given_api.current_user_playlists.assert_called()
 
 
     def test_get_all_collab_playlists_uses_preconfigured_api_client_if_no_client_is_given_as_an_argument(self):
         preconfigured_api = spotipy.client.Spotify()
-        preconfigured_api.current_user_playlists = Mock(return_value={ 'items': [], 'total': 0 })
+        preconfigured_api.current_user_playlists = Mock(return_value={
+            'items': [],
+            'owner': {
+                'id': 'creator_id'
+            },
+            'total': 0
+        })
         self.helper.api = preconfigured_api
-        self.helper.get_all_collab_playlists(api=None)
+        self.helper.get_all_collab_playlists('creator_id', api=None)
         preconfigured_api.current_user_playlists.assert_called()
 
     def test_get_all_collab_playlists_returns_only_collaborative_playlists_and_in_correct_format(self):
@@ -116,15 +128,21 @@ class TestSpotifyHelper(unittest.TestCase):
             'items': [
                 {
                     'uri': self.generate_track_uri(),
-                    'collaborative': False
+                    'collaborative': False,
+                    'owner': {
+                        'id': 'creator_id'
+                    }
                 } for i in range(0, 130)
             ],
             'total': 132
         }
         for item in range(130, 132):
             response['items'].append({
-                'uri': self.generate_track_uri(),
-                'collaborative': True
+                'uri': self.generate_playlist_uri(),
+                'collaborative': True,
+                'owner': {
+                    'id': 'creator_id'
+                }
             })
    
         mock_api = spotipy.client.Spotify()
@@ -144,13 +162,21 @@ class TestSpotifyHelper(unittest.TestCase):
             }
         ]
         expected_result = [ { 'uri': item['uri'] } for item in response['items'][130:] ]
-        result = self.helper.get_all_collab_playlists(api=mock_api)
+        result = self.helper.get_all_collab_playlists('creator_id', api=mock_api)
         self.assertEqual(result, expected_result)
 
 
     def test_get_all_collab_playlists_fetches_playlists_in_blocks_of_50_playlists(self):
         response = {
-            'items': [ { 'uri': 'playlist_uri%d' % item, 'collaborative': False } for item in range(0, 130) ],
+            'items': [
+                {
+                    'uri': 'playlist_uri%d' % item,
+                    'collaborative': False,
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                } for item in range(0, 130)
+            ],
             'total': 130
         }
         mock_api = spotipy.client.Spotify()
@@ -169,7 +195,7 @@ class TestSpotifyHelper(unittest.TestCase):
                 'total': 130
             }
         ]
-        self.helper.get_all_collab_playlists(api=mock_api)
+        self.helper.get_all_collab_playlists('creator_id', api=mock_api)
         self.assertEqual(mock_api.current_user_playlists.call_count, 3)
 
         self.assertEqual(mock_api.current_user_playlists.call_args_list[0][1]['limit'], 50)

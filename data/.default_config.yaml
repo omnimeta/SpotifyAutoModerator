@@ -29,7 +29,7 @@ PLAYLIST_CONFIG:
   #
   # Do you want SpotifyAutoModerator to protect ALL of your collaborative
   # playlists?
-  # Available options: True, False
+  # Available options: true, false
   #
   # Example:
   # PROTECT_ALL: false

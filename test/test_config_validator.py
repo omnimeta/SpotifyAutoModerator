@@ -494,10 +494,20 @@ class TestConfigValidator(unittest.TestCase):
     def test_all_protected_playlists_exist_returns_true_if_all_playlist_uris_are_matched_in_the_users_collab_playlists(self, helper_stub):
         playlists = [
             {
-                'playlist1label': { 'uri': self.generate_playlist_uri() }
+                'playlist1label': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                }
             },
             {
-                'playlist2label': { 'uri': self.generate_playlist_uri() }
+                'playlist2label': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                }
             }
         ]
         helper_obj = Mock()
@@ -506,24 +516,34 @@ class TestConfigValidator(unittest.TestCase):
             playlists[1]['playlist2label']
         ]
         helper_stub.return_value = helper_obj
-        validator = ConfigValidator({ 'PROTECTED_PLAYLISTS': playlists }, {}, {})
+        validator = ConfigValidator({ 'PROTECTED_PLAYLISTS': playlists }, {}, { 'USERNAME': 'creator_id' })
         self.assertTrue(validator.all_protected_playlists_exist(spotipy.client.Spotify()))
 
 
     @patch('src.config_validator.SpotifyHelper')
-    def test_all_protected_playlists_exist_returns_false_if_all_any_protected_playlist_uri_is_not_matched_in_the_users_collab_playlists(self, helper_stub):
+    def test_all_protected_playlists_exist_returns_false_if_l_any_protected_playlist_uri_is_not_matched_in_the_users_collab_playlists(self, helper_stub):
         protected_playlists = [
             {
-                'pllabel1': { 'uri': self.generate_playlist_uri() }
+                'pllabel1': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                }
             },
             {
-                'pllabel2': { 'uri': self.generate_playlist_uri() }
+                'pllabel2': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                }
             }
         ]
         helper_obj = Mock()
         helper_obj.get_all_collab_playlists.return_value = [ protected_playlists[0]['pllabel1'] ]
         helper_stub.return_value = helper_obj
-        validator = ConfigValidator({ 'PROTECTED_PLAYLISTS': protected_playlists }, {}, {})
+        validator = ConfigValidator({ 'PROTECTED_PLAYLISTS': protected_playlists }, {}, { 'USERNAME': 'creator_id' })
         self.assertFalse(validator.all_protected_playlists_exist(spotipy.client.Spotify()))
 
 
@@ -531,17 +551,32 @@ class TestConfigValidator(unittest.TestCase):
     def test_all_protected_playlists_exist_returns_false_if_a_playlist_has_more_than_one_label(self, helper_stub):
         protected_playlists = [
             {
-                'pllabel1': { 'uri': self.generate_playlist_uri() },
-                'anotherlabelforsame': { 'uri': self.generate_playlist_uri() }
+                'pllabel1': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                },
+                'anotherlabelforsame': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                }
             },
             {
-                'pllabel2': { 'uri': self.generate_playlist_uri() }
+                'pllabel2': {
+                    'uri': self.generate_playlist_uri(),
+                    'owner': {
+                        'id': 'creator_id'
+                    }
+                }
             }
         ]
         helper_obj = Mock()
         helper_obj.get_all_collab_playlists.return_value = [ protected_playlists[0]['pllabel1'] ]
         helper_stub.return_value = helper_obj
-        validator = ConfigValidator({ 'PROTECTED_PLAYLISTS': protected_playlists }, {}, {})
+        validator = ConfigValidator({ 'PROTECTED_PLAYLISTS': protected_playlists }, {}, { 'USERNAME': 'creator_id' })
         self.assertFalse(validator.all_protected_playlists_exist(spotipy.client.Spotify()))
 
 

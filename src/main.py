@@ -65,7 +65,7 @@ def moderate_playlists(logger, api_client, username, playlist_config):
     def protect_playlists():
         # runs one iteration of playlist moderation
         if playlist_config['PROTECT_ALL']:
-            protected_playlists = sp_helper.get_all_collab_playlists(api=api_client)
+            protected_playlists = sp_helper.get_all_collab_playlists(username, api=api_client)
         else:
             protected_playlists = []
             for playlist in playlist_config['PROTECTED_PLAYLISTS']:
