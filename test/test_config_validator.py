@@ -97,20 +97,17 @@ class TestConfigValidator(unittest.TestCase):
     def test_validate_log_config_returns_false_if_any_required_field_is_missing(self):
         validator = ConfigValidator(log={
             'FILE': 'file',
-            'FORMAT': 'format',
             'FILE_LEVEL': 'error'
         })
         self.assertFalse(validator.validate_log_config())
 
         validator = ConfigValidator(log={
             'FILE': 'file',
-            'FORMAT': 'format',
             'CONSOLE_LEVEL': 'error'
         })
         self.assertFalse(validator.validate_log_config())
 
         validator = ConfigValidator(log={
-            'FORMAT': 'format',
             'FILE_LEVEL': 'error',
             'CONSOLE_LEVEL': 'error'
         })
@@ -120,7 +117,6 @@ class TestConfigValidator(unittest.TestCase):
     def test_validate_log_config_returns_false_if_file_level_is_not_a_valid_log_level(self):
         validator = ConfigValidator(log={
             'FILE': 'file',
-            'FORMAT': 'format',
             'FILE_LEVEL': 'not_a_real_log_level',
             'CONSOLE_LEVEL': 'error'
         })
@@ -130,7 +126,6 @@ class TestConfigValidator(unittest.TestCase):
     def test_validate_log_config_returns_false_if_console_level_is_not_a_valid_log_level(self):
         validator = ConfigValidator(log={
             'FILE': 'file',
-            'FORMAT': 'format',
             'FILE_LEVEL': 'error',
             'CONSOLE_LEVEL': 'not_a_real_log_level'
         })
@@ -140,7 +135,6 @@ class TestConfigValidator(unittest.TestCase):
     def test_validate_log_config_returns_true_all_fields_provided_and_log_levels_are_valid(self):
         validator = ConfigValidator(log={
             'FILE': 'file',
-            'FORMAT': 'format',
             'FILE_LEVEL': 'error',
             'CONSOLE_LEVEL': 'error'
         })

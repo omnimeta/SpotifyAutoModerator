@@ -180,12 +180,14 @@ LOG_CONFIG:
 
   # ----- Log Format ----- #
   #
-  # The format used for logging.
+  # The format used for logging to the log file and to the console.
   #
   # Example:
-  #  FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+  # FILE_FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  # CONSOLE_FORMAT: '%(name)s [%(levelname)s] - %(message)s'
 
-  FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  FILE_FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  CONSOLE_FORMAT: '%(name)s [%(levelname)s] - %(message)s'
 
 
   # ----- Log Levels ----- #

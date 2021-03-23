@@ -100,17 +100,22 @@ def setup_logger(config):
 
     file_log_level = getattr(logging, config['FILE_LEVEL'].upper())
     console_log_level = getattr(logging, config['CONSOLE_LEVEL'].upper())
-    formatter = logging.Formatter(config['FORMAT'] if 'FORMAT' in config.keys()
-                                  else '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     file_handler = logging.FileHandler(config['FILE'])
     file_handler.setLevel(file_log_level)
     file_handler.set_name('file_handler')
-    file_handler.setFormatter(formatter)
+    file_format = logging.Formatter(
+        config['FILE_FORMAT'] if 'FILE_FORMAT' in config.keys()
+        else '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(file_format)
+
     console_handler = logging.StreamHandler(stream=sys.stdout)
     console_handler.set_name('console_handler')
     console_handler.setLevel(console_log_level)
-    console_handler.setFormatter(formatter)
+    console_format = logging.Formatter(
+        config['CONSOLE_FORMAT'] if 'CONSOLE_FORMAT' in config.keys()
+        else '%(name)s [%(levelname)s] - %(message)s')
+    console_handler.setFormatter(console_format)
 
     logger = logging.getLogger('spautomod')
     logger.setLevel('DEBUG')

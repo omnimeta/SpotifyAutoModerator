@@ -40,4 +40,3 @@ for FILENAME in ${@}; do
 done
 
 python3 -m unittest -v ${ARGUMENTS} 
-safety check -r requirements.txt

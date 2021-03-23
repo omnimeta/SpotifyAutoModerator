@@ -264,8 +264,7 @@ LOG_CONFIG:
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
                             'id': 'friendaccount1'
-                        },
-                        'position': 0
+                        }
                     },
                     { # this item was recently added (should be unauthorized)
                         'track': {
@@ -275,8 +274,7 @@ LOG_CONFIG:
                         'added_at': time() - 2000, # arbitrary
                         'added_by': {
                             'id': 'unknownspotifyuser'
-                        },
-                        'position': 1
+                        }
                     }
                     # the other item that was in the playlist before was removed without approval
                 ],
@@ -294,8 +292,7 @@ LOG_CONFIG:
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
                             'id': 'friendaccount1'
-                        },
-                        'position': 0
+                        }
                     }
                 ],
                 'limit': 100,
@@ -312,8 +309,7 @@ LOG_CONFIG:
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
                             'id': 'friendaccount1'
-                        },
-                        'position': 0
+                        }
                     },
                     { # this item was restored
                         'track': {
@@ -323,8 +319,7 @@ LOG_CONFIG:
                         'added_at': time(), # arbitrary
                         'added_by': {
                             'id': 'testuser'
-                        },
-                        'position': 1
+                        }
                     }
                 ],
                 'limit': 100,
@@ -365,8 +360,7 @@ LOG_CONFIG:
                         'added_at': time(), # arbitrary
                         'added_by': {
                             'id': 'testuser'
-                        },
-                        'position': 0
+                        }
                     }
                 ],
                 'limit': 100,
@@ -383,8 +377,7 @@ LOG_CONFIG:
                         'added_at': time() - 50000, # arbitrary
                         'added_by': {
                             'id': 'spotifyuser1'
-                        },
-                        'position': 0
+                        }
                     }
                 ],
                 'limit': 100,
@@ -520,6 +513,227 @@ LOG_CONFIG:
 
         # check program exited correctly
 
+        self.assertEqual(sys_exit.exception.code, 0)
+
+
+    @patch.object(os, 'environ', {})
+    @patch('src.integrity_manager.inputimeout', return_value='no') # stubbed user input
+    @patch('src.main.get_config_filepath') # allows different config file to be used
+    @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
+    def test_program_run_with_disagreeing_auth_levels_and_protect_all_no_loop_mode(self, api_mock,
+                                                                                   config_path_stub,
+                                                                                   user_input_stub):
+        # prepare config file
+        test_config_file = self.test_config_path + '/config.yaml'
+        config_path_stub.return_value = test_config_file
+        test_config = open(test_config_file, 'w')
+        config_data = """
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 120
+  PROTECT_ALL: true
+  GLOBAL_MODE: whitelist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: %s
+  GLOBAL_WHITELIST:
+    - spotifyuser1
+  PROTECTED_PLAYLISTS:
+    - RoslavetsOnly:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx1
+        blacklist:
+          -  spotifyuser1
+ACCOUNT_CONFIG:
+  USERNAME: testuser
+  CLIENT_ID: testuserclientid
+  CLIENT_SECRET: testuserclientsecret
+  REDIRECT_URI: http://localhost:8080/
+LOG_CONFIG:
+  FILE: %s/info.log
+  CONSOLE_LEVEL: critical
+  FILE_LEVEL: critical
+"""     % (self.test_backup_path, self.test_log_path)
+        test_config.write(config_data)
+        test_config.close()
+
+        only_pl_id = '%s%d' % (('x' * 21), 1)
+        only_pl_uri = 'spotify:playlist:' + only_pl_id
+        only_pl_name = 'RoslavetsOnlyMix'
+
+        def current_user_playlists(limit=50, offset=0):
+            return {
+                'total': 3,
+                'offset': offset,
+                'limit': 50,
+                'items':[
+                    {
+                        'uri': only_pl_uri,
+                        'owner': {
+                            'id': 'testuser'
+                        },
+                        'collaborative': True
+                    },
+                    {
+                        'uri': self.generate_playlist_uri(),
+                        'owner': {
+                            'id': 'testuser'
+                        },
+                        'collaborative': False
+                    },
+                    {
+                        'uri': self.generate_playlist_uri(),
+                        'owner': {
+                            'id': 'someoneelse'
+                        },
+                        'collaborative': True
+                    }
+
+                ]
+            }
+        api_mock.return_value.current_user_playlists = Mock(side_effect=current_user_playlists)
+
+        pl_item_ids = [ self.generate_spotify_id() for i in range(0, 3) ]
+        pl_item_uris = [ 'spotify:track:%s' % item_id for item_id in pl_item_ids ]
+        pl_item_names = [ self.generate_spotify_id() for i in range(0, len(pl_item_ids)) ]
+        playlist_items = [
+            {
+                'total': 3,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0],
+                            'name': pl_item_names[0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    },
+                    {
+                        'track': {
+                            'uri': pl_item_uris[1],
+                            'name': pl_item_names[1]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    },
+                    { # unauthorized track
+                        'track': {
+                            'uri': pl_item_uris[2],
+                            'name': pl_item_names[2]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'uri': pl_item_uris[2],
+                        'added_by': {
+                            'id': 'spotifyuser1'
+                        }
+                    }
+                ]
+            },
+            { # after removal of unauthorized track
+                'total': 3,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0],
+                            'name': pl_item_names[0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    },
+                    {
+                        'track': {
+                            'uri': pl_item_uris[1],
+                            'name': pl_item_names[1]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    }
+                ]
+            }
+        ]
+        api_mock.return_value.playlist_items = Mock(side_effect=playlist_items)
+
+        def playlist(pl_id, fields=None):
+            if pl_id == only_pl_id:
+                return { 'name': only_pl_name }
+            return { 'name': 'somerandomplaylistname' }
+        api_mock.return_value.playlist = Mock(side_effect=playlist)
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items = Mock()
+
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+
+        # use API mocks to test for correct interaction with external API
+
+        api_mock.assert_called_once()
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_ID'], 'testuserclientid')
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
+        self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items.assert_called_once_with(only_pl_id, [
+                {
+                    'uri': pl_item_uris[2],
+                    'positions': [ 2 ]
+                }
+            ])
+
+        self.assertEqual(api_mock.return_value.playlist_items.call_count, 2)
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[0][0][0], only_pl_id)
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[1][0][0], only_pl_id)
+
+        # use backups to test for correct end-state
+
+        def get_backups(pl_id):
+            pl_backups = []
+            new_backup_files = os.listdir(self.test_backup_path)
+            for filename in new_backup_files:
+                if re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, filename) is not None:
+                    pl_backups.append(filename)
+            return pl_backups
+
+        def get_backup_data(filename):
+            try:
+                backup_file = open('%s/%s' % (self.test_backup_path, filename))
+                backup_info = json.loads(backup_file.read())
+                return backup_info
+            except Exception as err:
+                print(err)
+            finally:
+                if backup_file is not None:
+                    backup_file.close()
+
+        backups = get_backups(only_pl_id)
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(get_backup_data(backups[0]), {
+            'name': only_pl_name,
+            'items': [
+                {
+                    'name': pl_item_names[0],
+                    'uri': pl_item_uris[0],
+                    'position': 0
+                },
+                {
+                    'name': pl_item_names[1],
+                    'uri': pl_item_uris[1],
+                    'position': 1
+                }
+            ]
+        })
+
+        # check no user input was necessary
+        user_input_stub.assert_not_called()
+
+        # check exit code is correct
         self.assertEqual(sys_exit.exception.code, 0)
 
 
