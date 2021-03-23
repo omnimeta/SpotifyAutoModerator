@@ -93,6 +93,8 @@ When the application is run in loop mode, **`DELAY_BETWEEN_SCANS`** determines h
 
 **`BACKUP_PATH`** determines the directory in which backups of your protected playlists will be stored. The default path `data/backups` should be suitable for the vast majority of use cases.
 
+**NOTE**: rememeber, to acquire the username of a Spotify user, go to their user page and copy their Spotify URI. You can then retrieve the ID from the end of the URI (after `spotify:user:`). _DO NOT_ simply use the user's display name, as this may not match their ID.
+
 
 #### Playlist-Specific Configuration
 

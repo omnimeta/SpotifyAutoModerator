@@ -3,14 +3,14 @@ from src.spotify_helper import SpotifyHelper
 class PlaylistCleaner:
 
     def __init__(self, logger, api, playlist_creator_id, config):
-        self.logger = logger
+        self.logger = logger.getChild('PlaylistCleaner')
         self.api = api
         self.playlist_creator_id = playlist_creator_id
         self.config = config
         self.spotify_helper = SpotifyHelper(self.logger)
 
     def run(self, playlist):
-        self.logger.info('Initiating playlist scanning/cleaning procedire')
+        self.logger.info('Initiating playlist scanning/cleaning procedure')
         playlist_id = self.spotify_helper.get_playlist_id(playlist)
         unauth_additions = self.find_unauthorized_additions(playlist_id)
         if len(unauth_additions) > 0:
@@ -34,7 +34,7 @@ class PlaylistCleaner:
                 })
 
         pl_details = self.api.playlist(playlist_id, fields='name')
-        self.logger.info('Identified %d unauthorized track additions to playlist `%s` (ID: %s)'
+        self.logger.info('Identified %d unauthorized track additions to playlist \'%s\' (ID: %s)'
                          % (len(unauth_additions), pl_details['name'], playlist_id))
 
         return unauth_additions
@@ -105,7 +105,7 @@ class PlaylistCleaner:
 
     def _log_playlist_item_removal(self, playlist_name, items):
         for item in items:
-            self.logger.info('REMOVING: `%s` added by user `%s` at %s (URI: %s) from playlist \'%s\''
+            self.logger.info('REMOVING: \'%s\' added by user \'%s\' at %s (URI: %s) from playlist \'%s\''
                              % (item['name'], item['added_by'], item['added_at'], item['uri'], playlist_name))
 
     def _get_playlist_config(self, playlist_id):

@@ -134,7 +134,7 @@ class IntegrityManager:
 
         num_backups = len(relevant_backups)
         if num_backups > desired_num_backups:
-            self.logger.info('Playlist with ID \'%s\ has more backups than the desired maximum', playlist_id)
+            self.logger.info('Playlist with ID \'%s\' has more backups than the desired maximum', playlist_id)
             self.logger.info('Deleting redundant backups for playlist with ID \'%s\'', playlist_id)
 
             # as expected, the oldest, most out-of-date backups are deleted
