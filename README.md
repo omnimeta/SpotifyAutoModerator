@@ -9,11 +9,11 @@ Automated moderator for collaborative playlists on Spotify.
 
 ## Contents
 
-* [The Problem!](./#the-problem)
-* [The Solution!](./#the-solution)
-* [Installation!](./#installation)
-* [Usage!](./#usage)
-* [Development!](./#development)
+* [The Problem](#the-problem)
+* [The Solution](#the-solution)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Development](#development)
 
 ## The Problem
 
