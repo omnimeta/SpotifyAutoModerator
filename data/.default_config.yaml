@@ -19,10 +19,10 @@ PLAYLIST_CONFIG:
   # a particular scan of all protected playlists before it starts the next scan.
   # During this delay time you will have the ability to quit.
   #
-  # Example - 5 minute delay:
-  # DELAY_BETWEEN_SCANS: 300
+  # Example - 30 minute delay:
+  # DELAY_BETWEEN_SCANS: 1800
 
-  DELAY_BETWEEN_SCANS: 300
+  DELAY_BETWEEN_SCANS: 1800
 
 
   # ----- Protect All or Selected ----- #
