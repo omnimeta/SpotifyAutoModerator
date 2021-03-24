@@ -238,7 +238,7 @@ PLAYLIST_CONFIG:
 
 In this example, the global mode is whitelist and three accounts (representing the user's friends) are whitelisted. The three friend accounts can therefore add to the first three listed playlists (which do not explicitly blacklist any of them), and are also able to add to `ModernAlternativeRnB` because it has an explicit blacklist in which they are not included. `ModernAlternativeRnB` can be added to by any user (including those not listed in this configuration) except `spotifyuser1` because the playlist has its own blacklist in which the user is the sole constituent. Only the four listed collaborative playlists are moderated as `PROTECT_ALL` is `false`.
 
-Here is another *simple example* that may be widely applicable:
+Here is another **simple example** that may be widely applicable:
 ``` yaml
 PLAYLIST_CONFIG:
   DELAY_BETWEEN_SCANS: 300
@@ -257,7 +257,7 @@ PLAYLIST_CONFIG:
 
 In this example, all of the user's collaborative playlists are protected (due to `PROTECT_ALL` being `true`). The global mode is whitelist, with two accounts (`friendaccount1` and `friendaccount2`) being whitelisted. The only explicitly listed playlist, `ProkofievConcertoMix`, has a blacklist which is empty (as is denoted by `[]`). Consequently, any Spotify user (regardless of them being listed in the above configuration) is able to add tracks to the playlist. For all of the other collaborative playlists owned by the user, because the playlists do not have an explicit (playlist-level) configuration, only the two globally whitelisted accounts are able to add tracks.
 
-Here is _yet_ another *simple example* that may be widely applicable:
+Here is _yet_ another **simple example** that may be widely applicable:
 ``` yaml
 PLAYLIST_CONFIG:
   DELAY_BETWEEN_SCANS: 300
@@ -324,7 +324,7 @@ To run the full test suite (and automatically measure code coverage), run the fo
 $> ./test.sh
 ```
 
-To run a subset of tests, provide the test filenames as arguments to the `test.sh` script, e.g.:
+To run a subset of tests, provide the test filenames as arguments to the `test.sh` script, for example:
 ``` shell
 $> ./test.sh test_integrity_manager.py test_playlist_cleaner.py
 ```
@@ -336,7 +336,7 @@ To measure code coverage for the entire test suite, run the following from the p
 $> ./coverage.sh
 ```
 
-To measure code coverage for a single test case, provide the test filename as an argument to the `coverage.sh` script, e.g.:
+To measure code coverage for a single test case, provide the test filename as an argument to the `coverage.sh` script, for example:
 ``` shell
 $> ./coverage.sh test_playlist_cleaner.py
 ```
