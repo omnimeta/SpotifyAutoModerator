@@ -23,5 +23,4 @@ docker run \
   --tty \
   --interactive \
   -w /var/spautomod \
-  -v `pwd`:/var/spautomod \
   spautomod:local ./spautomod ${@}
