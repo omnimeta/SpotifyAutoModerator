@@ -1,0 +1,11 @@
+#!/bin/sh
+
+function is_running() {
+  test ! -z "`docker-compose ps | grep 'spautomod' | grep 'Up'`"
+}
+
+if ! is_running; then
+    docker-compose up -d --build
+fi
+docker-compose exec spautomod ./spautomod ${@}
+docker-compose down

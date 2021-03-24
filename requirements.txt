@@ -1,6 +1,6 @@
-safety==1.10.3
-pyyaml==5.4.1
-spotipy==2.17.1
-inputimeout==1.0.4
-coverage==5.5
-coverage-badge==1.0.1
+safety==1.10.3         # vulnerability scanning of dependencies
+pyyaml==5.4.1          # handling of configuration files
+spotipy==2.17.1        # interaction with Spotify's API
+inputimeout==1.0.4     # handling of user input
+coverage==5.5          # code coverage
+coverage-badge==1.0.1  # code coverage

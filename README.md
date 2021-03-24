@@ -38,17 +38,26 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 
 ## Installation
 
-### Download the Project Source
+### Installation on Linux and Other UNIX-based Systems
 
-To install SpotifyAutoModerator, run the following commands:
+To install SpotifyAutoModerator, first acquire the source code by cloning the repository:
 
 ``` shell
 $> git clone https://github.com/omnimeta/SpotifyAutoModerator.git
-$> cd SpotifyAutoModerator
-$> ./setup.sh
 ```
 
-## Register the Application on Your Spotify Dashboard
+If you _do not_ plan on running the application in a Docker container, use the `setup.sh` script to install the application's dependencies:
+
+``` shell
+$> cd SpotifyAutoModerator
+$> cd ./setup.sh
+```
+
+### Installation on Windows
+
+Coming soon...
+
+### Register the Application on Your Spotify Dashboard
 
 Register the application at: https://developer.spotify.com/dashboard/login
 
@@ -285,10 +294,11 @@ In this example, all of the user's collaborative playlists are protected (due to
 
 ### Running the Application
 
-Once your account and playlist settings have been appropriately configured in `data/config.yaml`, you can run the application from the project root directory (i.e., the directory named `SpotifyAutoModerator`) using the `spautomod` executable:
+Once your account and playlist settings have been appropriately configured in `data/config.yaml`, you can run the application from the project root directory (i.e., the directory named `SpotifyAutoModerator`) using the `spautomod` executable, or using the `spautomod_docker` executable if you want to run the application within a Docker container:
 
 ``` shell
-$> ./spautomod [options]
+$> ./spautomod [options]         # run directly on your system
+$> ./spautomod_docker [options]  # run within a Docker container
 ```
 
 Available options:
@@ -302,7 +312,8 @@ Available options:
 To scan each of your protected playlists once (handling unauthorized additions and removals appropriately) and then quit:
 
 ``` shell
-$> ./spautomod
+$> ./spautomod         # run directly on your system 
+$> ./spautomod_docker  # run within a Docker container
 ```
 
 ### Continuously Moderate Playlists
@@ -310,11 +321,13 @@ $> ./spautomod
 Loop mode can be used to run SpotifyAutoModerator continuously until you ask the application to stop. In loop mode, the application will moderate your playlists in iterations and you will have the opportunity to request to quit between iterations. Use the `-l` or `--loop` options to run the application continuously:
 
 ``` shell
-$> ./spautomod -l
+$> ./spautomod -l         # run directly on your system
+$> ./spautomod_docker -l  # run within a Docker container
 ```
 or
 ``` shell
-$> ./spautomod --loop
+$> ./spautomod --loop         # run directly on your system
+$> ./spautomod_docker --loop  # run within a Docker container
 ```
 
 ## Development
@@ -323,8 +336,7 @@ $> ./spautomod --loop
 
 The following are the current goals of the project:
 * add more complex integration tests;
-* version for Windows;
-* version for Docker.
+* support for installation and usage on Windows.
 
 ### Testing
 
