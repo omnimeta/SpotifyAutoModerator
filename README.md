@@ -9,13 +9,13 @@ Automated moderator for collaborative playlists on Spotify.
 
 ## Contents
 
-* [The Problem](#the-problem)
-* [The Solution](#the-solution)
+* [Problem](#problem)
+* [Solution](#solution)
 * [Installation](#installation)
 * [Usage](#usage)
 * [Development](#development)
 
-## The Problem
+## Problem
 
 Spotify's collaborative playlists can be an awesome tool for constructing and sharing unique mixes of music with friends (and more).
 However, there are two crucial issues with Spotify's collaborative playlist system that can be a great annoyance for regular users:
@@ -27,7 +27,7 @@ Imagine spending years constructing and managing the perfect \<your preferred mi
 
 It is obvious that collaborative playlists require protection against such annoyances.
 
-## The Solution
+## Solution
 
 SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative playlists and provides the following services in an attempt to mitigate the aforementioned problem:
 
@@ -67,7 +67,7 @@ ACCOUNT_CONFIG:
   REDIRECT_URI: ReplaceThisWithYourRedirectURI
   USERNAME: ReplaceThisWithYourSpotifyUsername
 ```
-As shown above, `ACCOUNT_CONFIG.USERNAME` should be set to your Spotify username (also know as your Spotify ID). **NOTE**: your display name and username may not be the same. To acquire your true username, open your profile in Spotify and copy your Spotify URI. For example, if your Spotify URI is `spotify:user:omnimeta` then your Spotify username/ID is `omnimeta`.
+As shown above, `ACCOUNT_CONFIG.USERNAME` should be set to your Spotify username (also known as your Spotify ID). **NOTE**: your display name and username may not be the same. To acquire your true username, open your profile in Spotify and copy your Spotify URI. For example, if your Spotify URI is `spotify:user:omnimeta` then your Spotify username/ID is `omnimeta`.
 
 ## Usage
 

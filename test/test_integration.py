@@ -982,7 +982,7 @@ LOG_CONFIG:
     @patch('src.main.inputimeout', side_effect=['no', 'no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
-    def test_program_run_with_no_protect_all_one_playlist_and_unapproved_removas_with_loop_mode(self, api_mock,
+    def test_program_run_with_no_protect_all_one_playlist_and_unapproved_removals_with_loop_mode(self, api_mock,
                                                                                                 config_path_stub,
                                                                                                 loop_input_stub,
                                                                                                 remove_input_stub):
