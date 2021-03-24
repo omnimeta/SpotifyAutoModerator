@@ -1,11 +1,27 @@
 #!/bin/sh
 
+CONTAINER_NAME="SpotifyAutoModerator"
 function is_running() {
-  test ! -z "`docker-compose ps | grep 'spautomod' | grep 'Up'`"
+  test ! -z "`docker ps | grep ${CONTAINER_NAME} | grep 'Up'`"
+}
+
+function container_exists() {
+  test ! -z "`docker ps -a | grep ${CONTAINER_NAME}`"
 }
 
 if ! is_running; then
-    docker-compose up -d --build
+  docker build -t 'spautomod:local' .
 fi
-docker-compose exec spautomod ./spautomod ${@}
-docker-compose down
+
+if container_exists; then
+  docker rm ${CONTAINER_NAME}
+fi
+
+docker run \
+  --name SpotifyAutoModerator \
+  --restart=no \
+  --tty \
+  --interactive \
+  -w /var/spautomod \
+  -v `pwd`:/var/spautomod \
+  spautomod:local ./spautomod ${@}
