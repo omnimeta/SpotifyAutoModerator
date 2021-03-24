@@ -7,6 +7,14 @@ Automated moderator for collaborative playlists on Spotify.
 [![GitHub license](https://img.shields.io/github/license/omnimeta/SpotifyAutoModerator)](https://github.com/omnimeta/SpotifyAutoModerator/blob/master/LICENSE)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
+## Contents
+
+* [The Problem!](./#the-problem)
+* [The Solution!](./#the-solution)
+* [Installation!](./#installation)
+* [Usage!](./#usage)
+* [Development!](./#development)
+
 ## The Problem
 
 Spotify's collaborative playlists can be an awesome tool for constructing and sharing unique mixes of music with friends (and more).
@@ -26,6 +34,7 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 * **enforcement of a whitelist of authorized users** - automatic removal of any track additions by users which are not explicitly authorized;
 * **enforcement of a blacklist of unauthorized users** - automatic removal of any track additions by users which are explicitly banned from contributing to a particular playlist (or all playlists); and
 * **track restoration after unapproved removal** - SpotifyAutoModerator will automatically ask you to approve the removals of tracks from your protected playlists and will restore any tracks that were removed without your approval.
+
 
 ## Installation
 
