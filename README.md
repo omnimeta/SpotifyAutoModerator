@@ -15,7 +15,7 @@ However, there are two crucial issues with Spotify's collaborative playlist syst
 * any user can add any track to a public collaborative playlist; and
 * any user can remove any track from a public collaborative playlist.
 
-Imagine spending years constructing and managing the perfect <your preferred microgenre> playlist with your close friends. Now imagine a random Spotify artist to use their burner account to empty your playlist and replace it with their own (extremely underwhelming) music of a completely unrelated sub-genre. A lot of Spotify users don't need to imagine this at all, as it happens regularly. Record label accounts on Spotify have also been seen promoting their artists' music by adding it to irrelevant collaborative playlists. Additionally, general trolls exist on every online platform and Spotify is certainly no exception.
+Imagine spending years constructing and managing the perfect \<your preferred microgenre\> playlist with your close friends. Now imagine a random Spotify artist to use their burner account to empty your playlist and replace it with their own (extremely underwhelming) music of a completely unrelated sub-genre. A lot of Spotify users don't need to imagine this at all, as it happens regularly. Record label accounts on Spotify have also been seen promoting their artists' music by adding it to irrelevant collaborative playlists. Additionally, general trolls exist on every online platform and Spotify is certainly no exception.
 
 It is obvious that collaborative playlists require protection against such annoyances.
 
