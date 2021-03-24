@@ -162,6 +162,31 @@ class TestIntegrityManager(unittest.TestCase):
         self.manager.backup_playlist.assert_not_called()
         self.manager.manage_redundant_backups.assert_not_called()
 
+
+    def test_run_does_not_backup_a_playlist_if_a_timeout_exception_is_raised_while_asking_for_approval(self):
+        pl_id = self.generate_spotify_id()
+        removals = [
+            {
+                'name': 'removed track %d' % num,
+                'uri': self.generate_track_uri()
+            } for num in range(0, 3)
+        ]
+        self.manager.backup_playlist = Mock()
+        self.manager.manage_redundant_backups = Mock()
+
+        self.manager.find_latest_backup = Mock(return_value={
+            'name': 'playlistname',
+            'items': []
+        })
+        self.manager.get_removals = Mock(return_value=removals)
+        self.manager.get_unapproved_removals = Mock(side_effect=inputimeout.TimeoutOccurred())
+        self.manager._restore_removals = Mock()
+
+        self.manager.run({ 'uri': 'spotify:playlist:' + pl_id })
+        self.manager.backup_playlist.assert_not_called()
+        self.manager.manage_redundant_backups.assert_not_called()
+
+
     # ----- Tests for IntegrityManager.find_latest_backup ----- #
     
     def test_find_latest_backup_returns_backup_imported_from_file_with_latest_timestamp(self):
@@ -231,6 +256,13 @@ class TestIntegrityManager(unittest.TestCase):
         ])
         expected_removals = [ removals[2], removals[-1] ]
         self.assertEqual(self.manager.get_unapproved_removals(removals, 'pl_name'), expected_removals)
+
+
+    def test_get_unapproved_removals_propagates_timeout_exception_outwards(self):
+        removals = [ { 'uri': self.generate_track_uri } for i in range(0, 5) ]
+        self.manager._user_approves_removal = Mock(side_effect=inputimeout.TimeoutOccurred())
+
+        self.assertRaises(inputimeout.TimeoutOccurred, self.manager.get_unapproved_removals, removals, 'pl_name')
 
 
     # ----- Tests for IntegrityManager.backup_playlist ---- #
@@ -588,11 +620,11 @@ class TestIntegrityManager(unittest.TestCase):
     # ----- Tests for IntegrityManager._user_approves_removal ----- #
 
     @patch('src.integrity_manager.inputimeout', side_effect=inputimeout.TimeoutOccurred())
-    def test_user_approves_removal_returns_false_if_a_timeout_occurs(self, inputFuncMock):
-        self.assertFalse(self.manager._user_approves_removal({
+    def test_user_approves_removal_propagates_timeout_exception_outwards_if_a_timeout_occurs(self, inputFuncMock):
+        self.assertRaises(inputimeout.TimeoutOccurred, self.manager._user_approves_removal, {
             'name': 'track to be removed',
             'uri': self.generate_track_uri()
-        }, 'playlist name', 5))
+        }, 'playlist name', 5)
 
 
     @patch('src.integrity_manager.inputimeout', return_value='')

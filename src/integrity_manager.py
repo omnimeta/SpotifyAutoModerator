@@ -29,7 +29,13 @@ class IntegrityManager:
             return
 
         removals = self.get_removals(pl_id, latest_backup)
-        unapproved_removals = self.get_unapproved_removals(removals, latest_backup['name'])
+        try:
+            unapproved_removals = self.get_unapproved_removals(removals, latest_backup['name'])
+        except TimeoutOccurred as err:
+            self.logger.warning('No response given for an approval request')
+            self.logger.warning('Skipping track restoration for playlist with ID \'%s\' until next run', pl_id)
+            return
+
         if isinstance(unapproved_removals, list) and len(unapproved_removals) > 0:
             try:
                 self._restore_removals(pl_id, unapproved_removals)
@@ -84,8 +90,11 @@ class IntegrityManager:
     def get_unapproved_removals(self, removals, playlist_name):
         unapproved = []
         for removal in removals:
-            if not self._user_approves_removal(removal, playlist_name, 20):
-               unapproved.append(removal)
+            try:
+                if not self._user_approves_removal(removal, playlist_name, 20):
+                    unapproved.append(removal)
+            except TimeoutOccurred as err:
+                raise err
         return unapproved
 
 
@@ -151,8 +160,8 @@ class IntegrityManager:
                                 % (removal['name'], playlist_name), timeout=timeout_after_secs)
             if input in ['Y', 'y', 'YES', 'Yes', 'yes']:
                 return True
-        except TimeoutOccurred:
-            return False
+        except TimeoutOccurred as err:
+            raise err
         return False
 
 

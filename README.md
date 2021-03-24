@@ -238,9 +238,45 @@ PLAYLIST_CONFIG:
 
 In this example, the global mode is whitelist and three accounts (representing the user's friends) are whitelisted. The three friend accounts can therefore add to the first three listed playlists (which do not explicitly blacklist any of them), and are also able to add to `ModernAlternativeRnB` because it has an explicit blacklist in which they are not included. `ModernAlternativeRnB` can be added to by any user (including those not listed in this configuration) except `spotifyuser1` because the playlist has its own blacklist in which the user is the sole constituent. Only the four listed collaborative playlists are moderated as `PROTECT_ALL` is `false`.
 
+Here is another *simple example* that may be widely applicable:
+``` yaml
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 300
+  PROTECT_ALL: true
+  GLOBAL_MODE: whitelist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: data/backups
+  GLOBAL_WHITELIST:
+    - friendaccount1
+    - friendaccount2
+  PROTECTED_PLAYLISTS:
+    - ProkofievConcertoMix:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxxx
+        blacklist: []
+```
+
+In this example, all of the user's collaborative playlists are protected (due to `PROTECT_ALL` being `true`). The global mode is whitelist, with two accounts (`friendaccount1` and `friendaccount2`) being whitelisted. The only explicitly listed playlist, `ProkofievConcertoMix`, has a blacklist which is empty (as is denoted by `[]`). Consequently, any Spotify user (regardless of them being listed in the above configuration) is able to add tracks to the playlist. For all of the other collaborative playlists owned by the user, because the playlists do not have an explicit (playlist-level) configuration, only the two globally whitelisted accounts are able to add tracks.
+
+Here is _yet_ another *simple example* that may be widely applicable:
+``` yaml
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 300
+  PROTECT_ALL: true
+  GLOBAL_MODE: blacklist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: data/backups
+  GLOBAL_BLACKLIST: []
+  PROTECTED_PLAYLISTS:
+    - ProgressiveJazzFusion:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxxx
+        whitelist: []
+```
+
+In this example, all of the user's collaborative playlists are protected (due to `PROTECT_ALL` being `true`). The global mode is blacklist, but the global blacklist is empty. This means that any Spotify user can add tracks to all of the user's owned collaborative playlists, except `ProgressiveJazzFusion`. Only the user themself (i.e., the playlist own) is able to add tracks to `ProgressiveJazzFusion` because it has its own playlist-level configuration with an empty whitelist.
+
 ### Running the Application
 
-Once your account and playlist settings have been appropriately configured in `data/config.yaml`, you can run the application from the project root directory (i.e., the directory name `SpotifyAutoModerator`) using the `spautomod` executable:
+Once your account and playlist settings have been appropriately configured in `data/config.yaml`, you can run the application from the project root directory (i.e., the directory named `SpotifyAutoModerator`) using the `spautomod` executable:
 
 ``` shell
 $> ./spautomod [options]
@@ -272,8 +308,35 @@ or
 $> ./spautomod --loop
 ```
 
-## Project Roadmap
+## Development
+
+### Project Roadmap
 
 The following are the current goals of the project:
 * add more complex integration tests;
-* version for Windows.
+* version for Windows;
+* version for Docker.
+
+### Testing
+
+To run the full test suite (and automatically measure code coverage), run the following from the project root directory:
+``` shell
+$> ./test.sh
+```
+
+To run a subset of tests, provide the test filenames as arguments to the `test.sh` script, e.g.:
+``` shell
+$> ./test.sh test_integrity_manager.py test_playlist_cleaner.py
+```
+
+### Code Coverage
+
+To measure code coverage for the entire test suite, run the following from the project root directory:
+``` shell
+$> ./coverage.sh
+```
+
+To measure code coverage for a single test case, provide the test filename as an argument to the `coverage.sh` script, e.g.:
+``` shell
+$> ./coverage.sh test_playlist_cleaner.py
+```

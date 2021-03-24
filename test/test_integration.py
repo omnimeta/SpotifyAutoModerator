@@ -30,6 +30,28 @@ class TestIntegration(unittest.TestCase):
         self.generate_track_uri = (
             lambda gen_id=self.generate_spotify_id: 'spotify:track:' + gen_id())
 
+        def get_backups(pl_id):
+            pl_backups = []
+            new_backup_files = os.listdir(self.test_backup_path)
+            for filename in new_backup_files:
+                if re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, filename) is not None:
+                    pl_backups.append(filename)
+            return pl_backups
+
+        def get_backup_data(filename):
+            try:
+                backup_file = open('%s/%s' % (self.test_backup_path, filename))
+                backup_info = json.loads(backup_file.read())
+                return backup_info
+            except Exception as err:
+                print(err)
+            finally:
+                if backup_file is not None:
+                    backup_file.close()
+
+        self.get_backups = get_backups
+        self.get_backup_data = get_backup_data
+
         # also clear any files before starting for consistency (e.g., if other tests don't cleanup)
         for dir_path in [ self.test_config_path, self.test_backup_path, self.test_log_path ]:
             for filename in os.listdir(dir_path):
@@ -451,32 +473,8 @@ LOG_CONFIG:
 
         # use backups to test for correct end-state
 
-        def get_backups(pl_id):
-            pl_backups = []
-            new_backup_files = os.listdir(self.test_backup_path)
-            for filename in new_backup_files:
-                if re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, filename) is not None:
-                    pl_backups.append(filename)
-            return pl_backups
-
-        all_pl_backups = [ get_backups(pl_id) for pl_id in pl_ids ]
-        for backups in all_pl_backups[:-3]:
-            self.assertEqual(len(backups), 1)
-        for backups in all_pl_backups[-3:]:
-            self.assertEqual(len(backups), 0)
-
-        def get_backup_data(filename):
-            try:
-                backup_file = open('%s/%s' % (self.test_backup_path, filename))
-                backup_info = json.loads(backup_file.read())
-                return backup_info
-            except Exception as err:
-                print(err)
-            finally:
-                if backup_file is not None:
-                    backup_file.close()
-
-        self.assertEqual(get_backup_data(all_pl_backups[0][0]), {
+        all_pl_backups = [ self.get_backups(pl_id) for pl_id in pl_ids ]
+        self.assertEqual(self.get_backup_data(all_pl_backups[0][0]), {
             'name': pl_names[0],
             'items': [
                 {
@@ -491,11 +489,11 @@ LOG_CONFIG:
                 }
             ]
         })
-        self.assertEqual(get_backup_data(all_pl_backups[1][0]), {
+        self.assertEqual(self.get_backup_data(all_pl_backups[1][0]), {
             'name': pl_names[1],
             'items': []
         })
-        self.assertEqual(get_backup_data(all_pl_backups[2][0]), {
+        self.assertEqual(self.get_backup_data(all_pl_backups[2][0]), {
             'name': pl_names[2],
             'items': [
                 {
@@ -505,7 +503,7 @@ LOG_CONFIG:
                 },
             ]
         })
-        self.assertEqual(get_backup_data(all_pl_backups[3][0]), {
+        self.assertEqual(self.get_backup_data(all_pl_backups[3][0]), {
             'name': pl_names[3],
             'items': [
             ]
@@ -592,7 +590,7 @@ LOG_CONFIG:
 
         pl_item_ids = [ self.generate_spotify_id() for i in range(0, 3) ]
         pl_item_uris = [ 'spotify:track:%s' % item_id for item_id in pl_item_ids ]
-        pl_item_names = [ self.generate_spotify_id() for i in range(0, len(pl_item_ids)) ]
+        pl_item_names = [ self.generate_spotify_id() for i in range(0, len(pl_item_ids)) ] # arbitrary
         playlist_items = [
             {
                 'total': 3,
@@ -693,28 +691,9 @@ LOG_CONFIG:
 
         # use backups to test for correct end-state
 
-        def get_backups(pl_id):
-            pl_backups = []
-            new_backup_files = os.listdir(self.test_backup_path)
-            for filename in new_backup_files:
-                if re.search('^%s_[0-9]{10}\.[0-9]+\.backup\.json$' % pl_id, filename) is not None:
-                    pl_backups.append(filename)
-            return pl_backups
-
-        def get_backup_data(filename):
-            try:
-                backup_file = open('%s/%s' % (self.test_backup_path, filename))
-                backup_info = json.loads(backup_file.read())
-                return backup_info
-            except Exception as err:
-                print(err)
-            finally:
-                if backup_file is not None:
-                    backup_file.close()
-
-        backups = get_backups(only_pl_id)
+        backups = self.get_backups(only_pl_id)
         self.assertEqual(len(backups), 1)
-        self.assertEqual(get_backup_data(backups[0]), {
+        self.assertEqual(self.get_backup_data(backups[0]), {
             'name': only_pl_name,
             'items': [
                 {
@@ -736,6 +715,474 @@ LOG_CONFIG:
         # check exit code is correct
         self.assertEqual(sys_exit.exception.code, 0)
 
+
+    @patch.object(os, 'environ', {})
+    @patch.object(sys, 'argv', [ '-l' ]) # stubbed user input (via program args)
+    @patch('src.integrity_manager.inputimeout', return_value='no') # stubbed user input (via stdin) - disapproval
+    @patch('src.main.inputimeout', side_effect=['no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
+    @patch('src.main.get_config_filepath') # allows different config file to be used
+    @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
+    def test_program_run_with_simple_config_with_protect_all_and_loop_mode(self, api_mock, config_path_stub,
+                                                                           loop_input_stub, remove_input_stub):
+        # prepare config file
+        test_config_file = self.test_config_path + '/config.yaml'
+        config_path_stub.return_value = test_config_file
+        test_config = open(test_config_file, 'w')
+        config_data = """
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 5
+  PROTECT_ALL: true
+  GLOBAL_MODE: blacklist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: %s
+  GLOBAL_BLACKLIST: []
+  GLOBAL_WHITELIST:
+    - spotifyuser1
+  PROTECTED_PLAYLISTS:
+    - ChillMath:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx1
+        whitelist: []
+ACCOUNT_CONFIG:
+  USERNAME: testuser
+  CLIENT_ID: testuserclientid
+  CLIENT_SECRET: testuserclientsecret
+  REDIRECT_URI: http://localhost:8080/
+LOG_CONFIG:
+  FILE: %s/info.log
+  CONSOLE_LEVEL: critical
+  FILE_LEVEL: critical
+"""     % (self.test_backup_path, self.test_log_path)
+        # global whitelist is ignored
+        # no one except owner can add to ChillMath
+        # all other playlists are essentially public
+        test_config.write(config_data)
+        test_config.close()
+
+        pl_ids = [ '%s%d' % (('x' * 21), pl_num) for pl_num in range(1, 4) ]
+        pl_uris = [ 'spotify:playlist:%s' % pl_id for pl_id in pl_ids ]
+        pl_names = [ self.generate_spotify_id() for i in range(0, len(pl_ids)) ] # arbitrary
+
+        def current_user_playlists(limit=50, offset=0):
+            playlists = {
+                'total': 3,
+                'offset': offset,
+                'limit': 50,
+                'items':[
+                    {
+                        'uri': pl_uri,
+                        'owner': {
+                            'id': 'testuser'
+                        },
+                        'collaborative': True
+                    } for pl_uri in pl_uris
+                ]
+            }
+            playlists['items'][-1]['collaborative'] = False # this playlist should be ignored
+            return playlists
+        api_mock.return_value.current_user_playlists = Mock(side_effect=current_user_playlists)
+
+        # each of the two protected playlists starts with one track - added by the same non-owner user
+        # one should be unauthorized and removed, the other shouldn't
+        # user wants to continue after first iteration
+        # on second iteration, the authorized addition is removed without approval and should be restored
+        # user wants to quit after second iteration
+        pl_item_ids = [
+            [ self.generate_spotify_id() ] for pl in pl_ids[:-1]
+        ]
+        pl_item_uris = [
+            [ 'spotify:track:%s' % item_id for item_id in pl ] for pl in pl_item_ids
+        ]
+        pl_item_names = [
+            [ self.generate_spotify_id() for item_id in pl ] for pl in pl_item_ids # arbitrary
+        ]
+        playlist_items = [
+            { # playlist 1
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    { # unauthorized track
+                        'track': {
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    }
+                ]
+            },
+            { # playlist 1 - when first backup is taken
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [] # after unauthorized item was removed
+            },
+            { # playlist 2
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': { # authorized
+                            'uri': pl_item_uris[1][0],
+                            'name': pl_item_names[1][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    }
+                ]
+            },
+            { # playlist 2 - when first backup is taken
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[1][0],
+                            'name': pl_item_names[1][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    }
+                ]
+            },
+            # iteration two starts
+            { # playlist 1 - when checking for unauthorized additions
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': []
+            },
+            { # playlist 1 - when checking for removals
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': []
+            },
+            { # playlist 1 - when taking second backup
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': []
+            },
+            { # playlist 2 - when checking for unauthorized additions
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [] # the only track was removed (w/o approval)
+            },
+            { # playlist 2 - when checking for unapproved removals
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [] # the only track was removed (w/o approval)
+            },
+            { # playlist 2 - when taking second backup
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': { # track should be restored at this point
+                            'uri': pl_item_uris[1][0],
+                            'name': pl_item_names[1][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    }
+                ]
+            }
+            # the user exits after the second iteration
+        ]
+        api_mock.return_value.playlist_items = Mock(side_effect=playlist_items)
+
+        def playlist(pl_id, fields=None):
+            for index in range(0, len(pl_ids)):
+                if pl_id == pl_ids[index]:
+                    return { 'name': pl_names[index] }
+            return { 'name': 'somerandomplaylistname' }
+        api_mock.return_value.playlist = Mock(side_effect=playlist)
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items = Mock()
+        api_mock.return_value.playlist_add_items = Mock()
+
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+
+        # use API mocks to test for correct interaction with external API
+
+        api_mock.assert_called_once()
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_ID'], 'testuserclientid')
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
+        self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items.assert_called_once_with(pl_ids[0], [
+                {
+                    'uri': pl_item_uris[0][0],
+                    'positions': [ 0 ]
+                }
+            ])
+
+        self.assertEqual(api_mock.return_value.playlist_items.call_count, len(playlist_items))
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[1][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[2][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[3][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[4][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[5][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[6][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[7][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[8][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[9][0][0], pl_ids[1])
+
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 1)
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][1], [ pl_item_uris[1][0] ])
+
+        # user asked if they want to quit after 1st and 2nd iteration, and also when removing in 2nd iteration
+        self.assertEqual(loop_input_stub.call_count, 2)
+        self.assertEqual(remove_input_stub.call_count, 1)
+
+        # use backups to test for correct end-state
+
+        backups = [ self.get_backups(pl_id) for pl_id in pl_ids[:-1] ]
+        self.assertEqual(len(backups[0]), 1)
+        self.assertEqual(self.get_backup_data(backups[0][0]), {
+            'name': pl_names[0],
+            'items': []
+        })
+        self.assertEqual(len(backups[1]), 1)
+        self.assertEqual(self.get_backup_data(backups[1][0]), {
+            'name': pl_names[1],
+            'items': [
+                {
+                    'name': pl_item_names[1][0],
+                    'uri': pl_item_uris[1][0],
+                    'position': 0
+                }
+            ]
+        })
+
+        # check exit code is correct
+        self.assertEqual(sys_exit.exception.code, 0)
+
+
+    @patch.object(os, 'environ', {})
+    @patch.object(sys, 'argv', [ '-l' ]) # stubbed user input (via program args)
+    @patch('src.integrity_manager.inputimeout', side_effect=[ TimeoutOccurred(), 'no' ]) # stubbed user input (via stdin) - disapproval
+    @patch('src.main.inputimeout', side_effect=['no', 'no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
+    @patch('src.main.get_config_filepath') # allows different config file to be used
+    @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
+    def test_program_run_with_no_protect_all_one_playlist_and_unapproved_removas_with_loop_mode(self, api_mock,
+                                                                                                config_path_stub,
+                                                                                                loop_input_stub,
+                                                                                                remove_input_stub):
+        # prepare config file
+        test_config_file = self.test_config_path + '/config.yaml'
+        config_path_stub.return_value = test_config_file
+        test_config = open(test_config_file, 'w')
+        config_data = """
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 5
+  PROTECT_ALL: false
+  GLOBAL_MODE: whitelist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: %s
+  GLOBAL_BLACKLIST: []
+  GLOBAL_WHITELIST: []
+  PROTECTED_PLAYLISTS:
+    - Bach:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx1
+ACCOUNT_CONFIG:
+  USERNAME: testuser
+  CLIENT_ID: testuserclientid
+  CLIENT_SECRET: testuserclientsecret
+  REDIRECT_URI: http://localhost:8080/
+LOG_CONFIG:
+  FILE: %s/info.log
+  CONSOLE_LEVEL: critical
+  FILE_LEVEL: critical
+"""     % (self.test_backup_path, self.test_log_path)
+        test_config.write(config_data)
+        test_config.close()
+
+        pl_ids = [ '%s%d' % (('x' * 21), pl_num) for pl_num in range(1, 2) ]
+        pl_uris = [ 'spotify:playlist:%s' % pl_id for pl_id in pl_ids ]
+        pl_names = [ self.generate_spotify_id() for i in range(0, len(pl_ids)) ] # arbitrary
+
+        def current_user_playlists(limit=50, offset=0):
+            return {
+                'total': 1,
+                'offset': offset,
+                'limit': 50,
+                'items':[
+                    {
+                        'uri': pl_uri,
+                        'owner': {
+                            'id': 'testuser'
+                        },
+                        'collaborative': True
+                    } for pl_uri in pl_uris
+                ]
+            }
+        api_mock.return_value.current_user_playlists = Mock(side_effect=current_user_playlists)
+
+        # playlist has one track which gets removed before the first iteration
+        # the user gives no response when asked for approval of the removal
+        # playlist isn't restored and user is asked again on second time (and user disapproves)
+        pl_item_ids = [
+            [ self.generate_spotify_id() ] for pl in pl_ids
+        ]
+        pl_item_uris = [
+            [ 'spotify:track:%s' % item_id for item_id in pl ] for pl in pl_item_ids
+        ]
+        pl_item_names = [
+            [ self.generate_spotify_id() for item_id in pl ] for pl in pl_item_ids # arbitrary
+        ]
+        playlist_items = [
+            { # playlist 1 - when checking for unauthorized additions
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    }
+                ]
+            },
+            { # playlist 1 - when first backup is taken
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    }
+                ]
+            },
+            # iteration two starts (item was removed after last iteration)
+            { # playlist 1 - when checking for unauthorized additions
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [] # the only track was removed
+            },
+            { # playlist 1 - when checking for removals
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': []
+            },
+            # no backup taken because user gave no response when asked to approval removal
+            # iteration three starts
+            { # playlist 1 - when checking for unauthorized additions
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [] # the only track was removed (w/o approval)
+            },
+            { # playlist 1 - when checking for unapproved removals
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': [] # the only track was removed (w/o approval)
+            },
+            { # playlist 1 - when taking second backup
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': { # track should be restored at this point
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    }
+                ]
+            }
+            # the user exits after the second iteration
+        ]
+        api_mock.return_value.playlist_items = Mock(side_effect=playlist_items)
+
+        def playlist(pl_id, fields=None):
+            for index in range(0, len(pl_ids)):
+                if pl_id == pl_ids[index]:
+                    return { 'name': pl_names[index] }
+            return { 'name': 'somerandomplaylistname' }
+        api_mock.return_value.playlist = Mock(side_effect=playlist)
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items = Mock()
+        api_mock.return_value.playlist_add_items = Mock()
+
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+
+        # use API mocks to test for correct interaction with external API
+
+        api_mock.assert_called_once()
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_ID'], 'testuserclientid')
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
+        self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items.assert_not_called()
+
+        self.assertEqual(api_mock.return_value.playlist_items.call_count, len(playlist_items))
+        for call in range(0, len(playlist_items)):
+            self.assertEqual(api_mock.return_value.playlist_items.call_args_list[call][0][0], pl_ids[0])
+
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 1)
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][1], [ pl_item_uris[0][0] ])
+
+        # user asked if they want to quit after all three iterations
+        self.assertEqual(loop_input_stub.call_count, 3)
+
+        # user asked to approve removal in 2nd iteration (timeout occurs), then again on 3rd
+        self.assertEqual(remove_input_stub.call_count, 2)
+
+        # use backups to test for correct end-state
+
+        backups = [ self.get_backups(pl_id) for pl_id in pl_ids ]
+        self.assertEqual(self.get_backup_data(backups[0][0]), {
+            'name': pl_names[0],
+            'items': [
+                {
+                    'name': pl_item_names[0][0],
+                    'uri': pl_item_uris[0][0],
+                    'position': 0
+                }
+            ]
+        })
+
+        # check exit code is correct
+        self.assertEqual(sys_exit.exception.code, 0)
 
 
 if __name__ == '__main__':
