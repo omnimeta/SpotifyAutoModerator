@@ -336,7 +336,7 @@ $> ./spautomod --loop
 Once you have configured your settings in `data/config.yaml` you are able to start the application. This can be done either from PowerShell or from your file explorer.
 
 When used via PowerShell, SpotifyAutoModerator has the following command structure:
-``` shell
+``` powershell
 $> ./spautomod.exe [options]
 ```
 
