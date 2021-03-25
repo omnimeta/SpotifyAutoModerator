@@ -19,4 +19,4 @@ if [ -d dist/data/images ]; then
 fi
 
 mv dist spautomod4win
-echo 'Start-Process -FilePath "spautomod.exe" -ArgumentList "--loop" -Wait -WindowStyle Maximized' > spautomod4win/spautomod-loop
+echo 'Start-Process -FilePath "spautomod.exe" -ArgumentList "--loop" -Wait -WindowStyle Maximized' > spautomod4win/spautomod-loop.ps1
