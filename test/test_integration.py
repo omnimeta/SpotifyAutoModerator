@@ -977,15 +977,15 @@ LOG_CONFIG:
 
 
     @patch.object(os, 'environ', {})
-    @patch.object(sys, 'argv', [ '-l' ]) # stubbed user input (via program args)
-    @patch('src.integrity_manager.inputimeout', side_effect=[ TimeoutOccurred(), 'no' ]) # stubbed user input (via stdin) - disapproval
-    @patch('src.main.inputimeout', side_effect=['no', 'no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
+    @patch.object(sys, 'argv', [ '--loop' ]) # stubbed user input (via program args)
+    @patch('src.integrity_manager.inputimeout') # stubbed user input (via stdin) - disapproval
+    @patch('src.main.inputimeout', side_effect=['no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
-    def test_program_run_with_no_protect_all_one_playlist_and_unapproved_removals_with_loop_mode(self, api_mock,
-                                                                                                config_path_stub,
-                                                                                                loop_input_stub,
-                                                                                                remove_input_stub):
+    def test_program_run_with_no_protect_all_one_playlist_and_rearranged_tracks_with_loop_mode(self, api_mock,
+                                                                                               config_path_stub,
+                                                                                               loop_input_stub,
+                                                                                               remove_input_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
@@ -994,14 +994,14 @@ LOG_CONFIG:
 PLAYLIST_CONFIG:
   DELAY_BETWEEN_SCANS: 5
   PROTECT_ALL: false
-  GLOBAL_MODE: whitelist
+  GLOBAL_MODE: blacklist
   MAX_BACKUPS_PER_PLAYLIST: 1
   BACKUP_PATH: %s
   GLOBAL_BLACKLIST: []
-  GLOBAL_WHITELIST: []
   PROTECTED_PLAYLISTS:
     - Bach:
         uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx1
+        whitelist: []
 ACCOUNT_CONFIG:
   USERNAME: testuser
   CLIENT_ID: testuserclientid
@@ -1040,7 +1040,7 @@ LOG_CONFIG:
         # the user gives no response when asked for approval of the removal
         # playlist isn't restored and user is asked again on second time (and user disapproves)
         pl_item_ids = [
-            [ self.generate_spotify_id() ] for pl in pl_ids
+            [ self.generate_spotify_id() for i in range(0, 3) ] for pl in pl_ids
         ]
         pl_item_uris = [
             [ 'spotify:track:%s' % item_id for item_id in pl ] for pl in pl_item_ids
@@ -1050,7 +1050,32 @@ LOG_CONFIG:
         ]
         playlist_items = [
             { # playlist 1 - when checking for unauthorized additions
-                'total': 1,
+                'total': 2,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        },
+                        'track': {
+                            'uri': pl_item_uris[0][1],
+                            'name': pl_item_names[0][1]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        },
+                    }
+                ]
+            },
+            { # playlist 1 - when taking first backup
+                'total': 2,
                 'limit': 100,
                 'offset': 0,
                 'items': [
@@ -1063,18 +1088,11 @@ LOG_CONFIG:
                         'added_by': {
                             'id': 'testuser'
                         }
-                    }
-                ]
-            },
-            { # playlist 1 - when first backup is taken
-                'total': 1,
-                'limit': 100,
-                'offset': 0,
-                'items': [
+                    },
                     {
                         'track': {
-                            'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'uri': pl_item_uris[0][1],
+                            'name': pl_item_names[0][1]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1083,40 +1101,89 @@ LOG_CONFIG:
                     }
                 ]
             },
-            # iteration two starts (item was removed after last iteration)
+            # start of second iteration
             { # playlist 1 - when checking for unauthorized additions
-                'total': 0,
+                'total': 3,
                 'limit': 100,
                 'offset': 0,
-                'items': [] # the only track was removed
+                'items': [ # tracks 1 and 2 swapped positions
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][1],
+                            'name': pl_item_names[0][1]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    },
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    },
+                    { # unauthorized
+                        'track': {
+                            'uri': pl_item_uris[0][2],
+                            'name': pl_item_names[0][2]
+                        },
+                        'added_at': time() - 10000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser'
+                        }
+                    }
+                ]
             },
             { # playlist 1 - when checking for removals
-                'total': 0,
-                'limit': 100,
-                'offset': 0,
-                'items': []
-            },
-            # no backup taken because user gave no response when asked to approval removal
-            # iteration three starts
-            { # playlist 1 - when checking for unauthorized additions
-                'total': 0,
-                'limit': 100,
-                'offset': 0,
-                'items': [] # the only track was removed (w/o approval)
-            },
-            { # playlist 1 - when checking for unapproved removals
-                'total': 0,
-                'limit': 100,
-                'offset': 0,
-                'items': [] # the only track was removed (w/o approval)
-            },
-            { # playlist 1 - when taking second backup
-                'total': 1,
+                'total': 2,
                 'limit': 100,
                 'offset': 0,
                 'items': [
                     {
-                        'track': { # track should be restored at this point
+                        'track': {
+                            'uri': pl_item_uris[0][1],
+                            'name': pl_item_names[0][1]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    },
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][0],
+                            'name': pl_item_names[0][0]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    }
+                    # unauthorized addition was removed
+                ]
+            },
+            { # playlist 1 - when taking second backup
+                'total': 2,
+                'limit': 100,
+                'offset': 0,
+                'items': [
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][1],
+                            'name': pl_item_names[0][1]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'testuser'
+                        }
+                    },
+                    {
+                        'track': {
                             'uri': pl_item_uris[0][0],
                             'name': pl_item_names[0][0]
                         },
@@ -1126,7 +1193,7 @@ LOG_CONFIG:
                         }
                     }
                 ]
-            }
+            },
             # the user exits after the second iteration
         ]
         api_mock.return_value.playlist_items = Mock(side_effect=playlist_items)
@@ -1151,21 +1218,24 @@ LOG_CONFIG:
         self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
         self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
 
-        api_mock.return_value.playlist_remove_specific_occurrences_of_items.assert_not_called()
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items.assert_called_once_with(pl_ids[0], [
+            {
+                'uri': pl_item_uris[0][2],
+                'positions': [ 2 ]
+            }
+        ])
 
         self.assertEqual(api_mock.return_value.playlist_items.call_count, len(playlist_items))
         for call in range(0, len(playlist_items)):
             self.assertEqual(api_mock.return_value.playlist_items.call_args_list[call][0][0], pl_ids[0])
 
-        self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 1)
-        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][0], pl_ids[0])
-        self.assertEqual(api_mock.return_value.playlist_add_items.call_args_list[0][0][1], [ pl_item_uris[0][0] ])
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 0)
 
-        # user asked if they want to quit after all three iterations
-        self.assertEqual(loop_input_stub.call_count, 3)
+        # user asked if they want to quit after each of the two iterations
+        self.assertEqual(loop_input_stub.call_count, 2)
 
-        # user asked to approve removal in 2nd iteration (timeout occurs), then again on 3rd
-        self.assertEqual(remove_input_stub.call_count, 2)
+        # no unauthorized removals
+        remove_input_stub.assert_not_called()
 
         # use backups to test for correct end-state
 
@@ -1174,15 +1244,21 @@ LOG_CONFIG:
             'name': pl_names[0],
             'items': [
                 {
+                    'name': pl_item_names[0][1],
+                    'uri': pl_item_uris[0][1],
+                    'position': 0
+                },
+                {
                     'name': pl_item_names[0][0],
                     'uri': pl_item_uris[0][0],
-                    'position': 0
+                    'position': 1
                 }
             ]
         })
 
         # check exit code is correct
         self.assertEqual(sys_exit.exception.code, 0)
+
 
 
 if __name__ == '__main__':

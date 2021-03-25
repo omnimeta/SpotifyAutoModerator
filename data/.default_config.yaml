@@ -184,10 +184,10 @@ LOG_CONFIG:
   #
   # Example:
   # FILE_FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-  # CONSOLE_FORMAT: '%(name)s [%(levelname)s] - %(message)s'
+  # CONSOLE_FORMAT: '[%(levelname)s] - %(message)s'
 
   FILE_FORMAT: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-  CONSOLE_FORMAT: '%(name)s [%(levelname)s] - %(message)s'
+  CONSOLE_FORMAT: '[%(levelname)s] - %(message)s'
 
 
   # ----- Log Levels ----- #

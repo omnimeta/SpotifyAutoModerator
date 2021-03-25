@@ -38,7 +38,12 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 
 ## Installation
 
-### Installation on UNIX-based Systems
+### Requirements
+
+* python3
+* pip3 (used to install application-level dependencies)
+
+### Installation on Linux and MacOS
 
 To install SpotifyAutoModerator, run the following commands:
 

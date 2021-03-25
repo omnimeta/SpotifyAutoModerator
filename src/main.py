@@ -83,6 +83,7 @@ def moderate_playlists(logger, api_client, username, playlist_config):
         # terminate the program loop without needing to send a kill signal
         while True:
             protect_playlists()
+            logger.info('Completed iteration')
             if user_wants_to_exit(playlist_config['DELAY_BETWEEN_SCANS']):
                 break
     else:
