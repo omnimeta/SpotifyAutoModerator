@@ -36,12 +36,12 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 
 ## Installation
 
-### Requirements
+### Linux and MacOS
 
-* python3
-* pip3 (used to install application-level dependencies)
+Requirements:
 
-### Installation on Linux and MacOS
+* python3, and
+* pip3 (used to install application-level dependencies).
 
 To install SpotifyAutoModerator, run the following commands:
 
@@ -51,7 +51,7 @@ $> cd SpotifyAutoModerator
 $> ./setup.sh
 ```
 
-### Installation on Windows
+### Windows
 
 PowerShell (i.e., the "Windows Terminal") is required to run SpotifyAutoModerator on Windows. If you are not sure whether you have PowerShell installed, simply search for "Windows Terminal" in the Microsoft App Store.
 
@@ -388,7 +388,7 @@ If you are unable to resolve your problem, [create a new issue](https://github.c
 
 The following are the current goals of the project:
 * add more complex integration tests;
-* version for Docker.
+* provide a Docker-based version.
 
 ### Testing
 
