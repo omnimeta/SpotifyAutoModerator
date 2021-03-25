@@ -373,11 +373,14 @@ $> ./spautomod.exe --loop
 
 The most common source of errors are mistakes in your configuration file.
 
-Check the bottom of the log file `data/logs/debug.log` for the most recent errors that have occurred and update your `data/config.yaml` file accordingly.
+Check the bottom of the log file (`data/logs/debug.log` by default) for the most recent errors that have occurred and update your `data/config.yaml` file accordingly.
 
-Ensure that you have (#register-the-application-on-your-spotify-dashboard)[registered the application in the Spotify Dashboard] and confirm that that the same redirect URI registered for the application is set in your `data/config.yaml` file for the `ACCOUNT_CONFIG.REDIRECT_URI` setting.
+Ensure that you have [registered the application in the Spotify Dashboard](#register-the-application-on-your-spotify-dashboard) and confirm that that the same redirect URI registered for the application is set in your `data/config.yaml` file for the `ACCOUNT_CONFIG.REDIRECT_URI` setting.
 
-If you are unable to resolve your problem, feel free to create an issue on this repository and provide the relevant (anonymised) log information from your log file (`data/logs/debug.log` by default).
+If you are unable to resolve your problem, [create a new issue](https://github.com/omnimeta/SpotifyAutoModerator/issues) and provide the following (anonymised) information:
+
+* your configuration file (`data/config.yaml`), and
+* the relevant log lines from your log file.
 
 ## Development
 
