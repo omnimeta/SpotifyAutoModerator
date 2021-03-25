@@ -369,6 +369,10 @@ or
 $> ./spautomod.exe --loop
 ```
 
+### Troubleshooting
+
+The most common source of errors are mistakes in your configuration file. Check the bottom of log file `data/logs/debug.log` file for the most recent errors that have occurred and update your `data/config.yaml` file accordingly. Additionally, make sure that you have setup the application in the Spotify Dashboard (as described in the installation section) and that you have also added a redirect URI for the application. 
+
 ## Development
 
 ### Project Roadmap
