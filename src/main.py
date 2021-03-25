@@ -40,16 +40,20 @@ def main():
         sys.exit(1)
 
     logger.info('Starting new session of SpotifyAutoModerator')
-    api_client = SpotifyHelper(logger).configure_api(
-        account_config['CLIENT_ID'],
-        account_config['CLIENT_SECRET'],
-        account_config['REDIRECT_URI']
-    )
-    if not isinstance(api_client, spotipy.client.Spotify):
-        logger.error('Failed to authenticate with Spotify')
-        logger.error('Please confirm your Spotify client/account details are correct in `data/config.yaml`')
+    try:
+        api_client = SpotifyHelper(logger).configure_api(
+            account_config['CLIENT_ID'],
+            account_config['CLIENT_SECRET'],
+            account_config['REDIRECT_URI']
+        )
+        if not isinstance(api_client, spotipy.client.Spotify):
+            raise Exception('Failed to authenticate with Spotify')
+    except Exception as err:
+        logger.error('Error: \'%s\'', err)
+        logger.error('Confirm your Spotify client/account details are correct in `data/config.yaml`')
         sys.exit(1)
-    elif not config_validator.all_protected_playlists_exist(api_client):
+
+    if not config_validator.all_protected_playlists_exist(api_client):
         logger.error('Invalid configuration file')
         sys.exit(1)
 

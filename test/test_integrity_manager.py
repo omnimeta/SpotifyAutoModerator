@@ -291,16 +291,26 @@ class TestIntegrityManager(unittest.TestCase):
             {
                 'track': {
                     'name': 'track1',
-                    'uri': self.generate_track_uri()
+                    'uri': self.generate_track_uri(),
+                    'artists': [
+                    ]
                 },
-                'position': 1
+                'position': 0
             },
             {
                 'track': {
                     'name': 'track2',
-                    'uri': self.generate_track_uri()
+                    'uri': self.generate_track_uri(),
+                    'artists': [
+                        {
+                            'name': 'artist1'
+                        },
+                        {
+                            'name': 'artist2'
+                        }
+                    ]
                 },
-                'position': 2
+                'position': 1
             }
         ]
         self.manager.spotify_helper.get_all_items_in_playlist = Mock(return_value=items)
@@ -316,11 +326,17 @@ class TestIntegrityManager(unittest.TestCase):
             'name': 'playlist name',
             'items': [
                 {
-
-                    'name': item['track']['name'],
-                    'uri': item['track']['uri'],
-                    'position': item['position']
-                } for item in items
+                    'name': items[0]['track']['name'],
+                    'artists': '',
+                    'uri': items[0]['track']['uri'],
+                    'position': 0
+                },
+                {
+                    'name': items[1]['track']['name'],
+                    'artists': 'artist1, artist2',
+                    'uri': items[1]['track']['uri'],
+                    'position': 1
+                }
             ]
         }, backup_content)
 
@@ -623,7 +639,12 @@ class TestIntegrityManager(unittest.TestCase):
     def test_user_approves_removal_propagates_timeout_exception_outwards_if_a_timeout_occurs(self, inputFuncMock):
         self.assertRaises(inputimeout.TimeoutOccurred, self.manager._user_approves_removal, {
             'name': 'track to be removed',
-            'uri': self.generate_track_uri()
+            'uri': self.generate_track_uri(),
+                'artists': [
+                    {
+                        'name': 'artist1',
+                    }
+                ]
         }, 'playlist name', 5)
 
 
@@ -631,7 +652,15 @@ class TestIntegrityManager(unittest.TestCase):
     def test_user_approves_removal_returns_false_if_user_input_is_empty(self, inputFuncMock):
         self.assertFalse(self.manager._user_approves_removal({
             'name': 'track to be removed',
-            'uri': self.generate_track_uri()
+            'uri': self.generate_track_uri(),
+                'artists': [
+                    {
+                        'name': 'artist1',
+                    },
+                    {
+                        'name': 'artist2',
+                    }
+                ]
         }, 'playlist name', 5))
 
 
@@ -639,7 +668,8 @@ class TestIntegrityManager(unittest.TestCase):
     def test_user_approves_removal_returns_false_if_user_input_is_nonempty_but_is_not_some_variant_of_yes(self, inputFuncMock):
         self.assertFalse(self.manager._user_approves_removal({
             'name': 'track to be removed',
-            'uri': self.generate_track_uri()
+            'uri': self.generate_track_uri(),
+            'artists': []
         }, 'playlist name', 5))
 
 
@@ -650,7 +680,15 @@ class TestIntegrityManager(unittest.TestCase):
             inputFuncMock.return_value = yes
             self.assertTrue(self.manager._user_approves_removal({
                 'name': 'track to be removed',
-                'uri': self.generate_track_uri()
+                'uri': self.generate_track_uri(),
+                'artists': [
+                    {
+                        'name': 'artist1',
+                    },
+                    {
+                        'name': 'artist2',
+                    }
+                ]
             }, 'playlist name', 5))
 
 

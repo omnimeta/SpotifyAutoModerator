@@ -101,13 +101,16 @@ class IntegrityManager:
     def backup_playlist(self, playlist_id):
         playlist_info = self.api.playlist(playlist_id, fields='name')
         playlist_items = self.spotify_helper.get_all_items_in_playlist(
-            playlist_id, fields='items(track(name,uri)),total', api=self.api)
+            playlist_id, fields='items(track(name,uri, artists.name)),total', api=self.api)
         formatted_items = []
 
         self.logger.info("Backing up playlist with ID \'%s\'", playlist_id)
         for item in playlist_items:
             formatted_items.append({
                 'name': item['track']['name'],
+                'artists': self._get_artists_string([
+                    artist['name'] for artist in item['track']['artists']
+                ]),
                 'uri': item['track']['uri'],
                 'position': item['position']
             })
@@ -122,7 +125,7 @@ class IntegrityManager:
         backup_file = open(backup_file_path, 'w')
         backup_file.write(json.dumps(backup))
         backup_file.close()
-        sleep(0.5) # for stability
+        sleep(0.2) # for stability
         self.logger.info("Completed backup of playlist with ID \'%s\'", playlist_id)
 
 
@@ -156,13 +159,22 @@ class IntegrityManager:
 
     def _user_approves_removal(self, removal, playlist_name, timeout_after_secs):
         try:
-            input = inputimeout(prompt='Do you approve the removal of \'%s\' from playlist \'%s\'? (Y/n): '
-                                % (removal['name'], playlist_name), timeout=timeout_after_secs)
+            input = inputimeout(prompt='Do you approve the removal of \'%s - %s\' from playlist \'%s\'? (Y/n): '
+                                % (removal['artists'], removal['name'], playlist_name), timeout=timeout_after_secs)
             if input in ['Y', 'y', 'YES', 'Yes', 'yes']:
                 return True
         except TimeoutOccurred as err:
             raise err
         return False
+
+
+    def _get_artists_string(self, artist_names):
+        combined = ''
+        for name in artist_names:
+            combined += '%s, ' % name
+        if combined != '':
+            combined = combined[:-2]
+        return combined
 
 
     def _restore_removals(self, playlist_id, removals):

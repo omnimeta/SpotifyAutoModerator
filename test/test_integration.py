@@ -220,6 +220,7 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': 'pl1track%d' % (item_num + 1),
+                    'artists': 'artist 1',
                     'uri': backed_up_items[0][item_num]
                 } for item_num in range(0, len(backed_up_items[0]))
             ]
@@ -229,6 +230,7 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': 'pl3track%d' % (item_num + 1),
+                    'artists': 'artist 3, artist 4',
                     'uri': backed_up_items[1][item_num]
                 } for item_num in range(0, len(backed_up_items[1]))
             ]
@@ -282,6 +284,11 @@ LOG_CONFIG:
                         'track': {
                             'name': 'pl1track1',
                             'uri': backed_up_items[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artist1'
+                                }
+                            ]
                         },
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
@@ -291,7 +298,12 @@ LOG_CONFIG:
                     { # this item was recently added (should be unauthorized)
                         'track': {
                             'name': 'pl1newtrack1',
-                            'uri': 'spotify:track:' + added_to_1_id
+                            'uri': 'spotify:track:' + added_to_1_id,
+                            'artists': [
+                                {
+                                    'name': 'artist2'
+                                }
+                            ]
                         },
                         'added_at': time() - 2000, # arbitrary
                         'added_by': {
@@ -310,6 +322,11 @@ LOG_CONFIG:
                         'track': {
                             'name': 'pl1track1',
                             'uri': backed_up_items[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artist1'
+                                }
+                            ]
                         },
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
@@ -327,6 +344,11 @@ LOG_CONFIG:
                         'track': {
                             'name': 'pl1track1',
                             'uri': backed_up_items[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artist1'
+                                }
+                            ]
                         },
                         'added_at': time() - 40000, # arbitrary
                         'added_by': {
@@ -337,6 +359,11 @@ LOG_CONFIG:
                         'track': {
                             'name': 'pl1track2',
                             'uri': backed_up_items[0][1],
+                            'artists': [
+                                {
+                                    'name': 'artist2'
+                                }
+                            ]
                         },
                         'added_at': time(), # arbitrary
                         'added_by': {
@@ -378,6 +405,14 @@ LOG_CONFIG:
                         'track': {
                             'name': 'pl3track2',
                             'uri': backed_up_items[1][1],
+                            'artists': [
+                                {
+                                    'name': 'artist3'
+                                },
+                                {
+                                    'name': 'artist4'
+                                }
+                            ]
                         },
                         'added_at': time(), # arbitrary
                         'added_by': {
@@ -395,6 +430,11 @@ LOG_CONFIG:
                         'track': {
                             'name': 'pl4newtrack',
                             'uri': 'spotify:track:' + added_to_4_id,
+                            'artists': [
+                                {
+                                    'name': 'artist5'
+                                }
+                            ]
                         },
                         'added_at': time() - 50000, # arbitrary
                         'added_by': {
@@ -480,11 +520,13 @@ LOG_CONFIG:
                 {
                     'name': 'pl1track1',
                     'uri': backed_up_items[0][0],
+                    'artists': 'artist1',
                     'position': 0
                 },
                 {
                     'name': 'pl1track2',
                     'uri': backed_up_items[0][1],
+                    'artists': 'artist2',
                     'position': 1
                 }
             ]
@@ -499,6 +541,7 @@ LOG_CONFIG:
                 {
                     'name': 'pl3track2',
                     'uri': backed_up_items[1][1],
+                    'artists': 'artist3, artist4',
                     'position': 0
                 },
             ]
@@ -600,7 +643,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0],
-                            'name': pl_item_names[0]
+                            'name': pl_item_names[0],
+                            'artists': [
+                                {
+                                    'name': 'artist1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -610,7 +658,18 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[1],
-                            'name': pl_item_names[1]
+                            'name': pl_item_names[1],
+                            'artists': [
+                                {
+                                    'name': 'artist2'
+                                },
+                                {
+                                    'name': 'artist3'
+                                },
+                                {
+                                    'name': 'artist4'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -620,7 +679,12 @@ LOG_CONFIG:
                     { # unauthorized track
                         'track': {
                             'uri': pl_item_uris[2],
-                            'name': pl_item_names[2]
+                            'name': pl_item_names[2],
+                            'artists': [
+                                {
+                                    'name': 'artist5'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'uri': pl_item_uris[2],
@@ -638,7 +702,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0],
-                            'name': pl_item_names[0]
+                            'name': pl_item_names[0],
+                            'artists': [
+                                {
+                                    'name': 'artist1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -648,7 +717,18 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[1],
-                            'name': pl_item_names[1]
+                            'name': pl_item_names[1],
+                            'artists': [
+                                {
+                                    'name': 'artist2'
+                                },
+                                {
+                                    'name': 'artist3'
+                                },
+                                {
+                                    'name': 'artist4'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -698,11 +778,13 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': pl_item_names[0],
+                    'artists': 'artist1',
                     'uri': pl_item_uris[0],
                     'position': 0
                 },
                 {
                     'name': pl_item_names[1],
+                    'artists': 'artist2, artist3, artist4',
                     'uri': pl_item_uris[1],
                     'position': 1
                 }
@@ -804,7 +886,12 @@ LOG_CONFIG:
                     { # unauthorized track
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -827,7 +914,12 @@ LOG_CONFIG:
                     {
                         'track': { # authorized
                             'uri': pl_item_uris[1][0],
-                            'name': pl_item_names[1][0]
+                            'name': pl_item_names[1][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -844,7 +936,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[1][0],
-                            'name': pl_item_names[1][0]
+                            'name': pl_item_names[1][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -892,7 +989,12 @@ LOG_CONFIG:
                     {
                         'track': { # track should be restored at this point
                             'uri': pl_item_uris[1][0],
-                            'name': pl_item_names[1][0]
+                            'name': pl_item_names[1][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -966,6 +1068,7 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': pl_item_names[1][0],
+                    'artists': 'artistname',
                     'uri': pl_item_uris[1][0],
                     'position': 0
                 }
@@ -1057,7 +1160,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname 1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1065,7 +1173,12 @@ LOG_CONFIG:
                         },
                         'track': {
                             'uri': pl_item_uris[0][1],
-                            'name': pl_item_names[0][1]
+                            'name': pl_item_names[0][1],
+                            'artists': [
+                                {
+                                    'name': 'artistname 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1082,7 +1195,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname 1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1092,7 +1210,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][1],
-                            'name': pl_item_names[0][1]
+                            'name': pl_item_names[0][1],
+                            'artists': [
+                                {
+                                    'name': 'artistname 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1110,7 +1233,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][1],
-                            'name': pl_item_names[0][1]
+                            'name': pl_item_names[0][1],
+                            'artists': [
+                                {
+                                    'name': 'artistname 1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1120,7 +1248,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1130,7 +1263,12 @@ LOG_CONFIG:
                     { # unauthorized
                         'track': {
                             'uri': pl_item_uris[0][2],
-                            'name': pl_item_names[0][2]
+                            'name': pl_item_names[0][2],
+                            'artists': [
+                                {
+                                    'name': 'artistname 3'
+                                }
+                            ]
                         },
                         'added_at': time() - 10000, # arbitrary
                         'added_by': {
@@ -1147,7 +1285,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][1],
-                            'name': pl_item_names[0][1]
+                            'name': pl_item_names[0][1],
+                            'artists': [
+                                {
+                                    'name': 'artistname 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1157,7 +1300,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname 1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1175,7 +1323,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][1],
-                            'name': pl_item_names[0][1]
+                            'name': pl_item_names[0][1],
+                            'artists': [
+                                {
+                                    'name': 'artistname 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1185,7 +1338,12 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artistname 1'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1246,11 +1404,13 @@ LOG_CONFIG:
                 {
                     'name': pl_item_names[0][1],
                     'uri': pl_item_uris[0][1],
+                    'artists': 'artistname 2',
                     'position': 0
                 },
                 {
                     'name': pl_item_names[0][0],
                     'uri': pl_item_uris[0][0],
+                    'artists': 'artistname 1',
                     'position': 1
                 }
             ]
@@ -1341,7 +1501,15 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artist name 1'
+                                },
+                                {
+                                    'name': 'artist name 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1358,7 +1526,15 @@ LOG_CONFIG:
                     {
                         'track': {
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artist name 1'
+                                },
+                                {
+                                    'name': 'artist name 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1402,7 +1578,15 @@ LOG_CONFIG:
                     {
                         'track': { # track should be restored at this point
                             'uri': pl_item_uris[0][0],
-                            'name': pl_item_names[0][0]
+                            'name': pl_item_names[0][0],
+                            'artists': [
+                                {
+                                    'name': 'artist name 1'
+                                },
+                                {
+                                    'name': 'artist name 2'
+                                }
+                            ]
                         },
                         'added_at': time() - 20000, # arbitrary
                         'added_by': {
@@ -1459,6 +1643,7 @@ LOG_CONFIG:
             'items': [
                 {
                     'name': pl_item_names[0][0],
+                    'artists': 'artist name 1, artist name 2',
                     'uri': pl_item_uris[0][0],
                     'position': 0
                 }
