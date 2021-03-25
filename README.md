@@ -53,7 +53,14 @@ $> ./setup.sh
 
 ### Installation on Windows
 
-Coming soon.
+PowerShell (i.e., the "Windows Terminal") is required to run SpotifyAutoModerator on Windows. If you are not sure whether you have PowerShell installed, simply search for "Windows Terminal" in the Microsoft App Store.
+
+To install SpotifyAutoModerator on Windows:
+
+* Download the following zip file: https://github.com/omnimeta/SpotifyAutoModerator/raw/main/spautomod4win.zip
+* Extract the file in the desired folder - this should create an `spautomod4win` folder.
+ 
+In the next setup step you will need to edit the `data/config.yaml` file within this `spautomod4win` folder.
 
 ### Register the Application on Your Spotify Dashboard
 
@@ -290,7 +297,7 @@ PLAYLIST_CONFIG:
 
 In this example, all of the user's collaborative playlists are protected (due to `PROTECT_ALL` being `true`). The global mode is blacklist, but the global blacklist is empty. This means that any Spotify user can add tracks to all of the user's owned collaborative playlists, except `ProgressiveJazzFusion`. Only the user themself (i.e., the playlist own) is able to add tracks to `ProgressiveJazzFusion` because it has its own playlist-level configuration with an empty whitelist.
 
-### Running the Application
+### Running the Application on Linux or MacOS
 
 Once your account and playlist settings have been appropriately configured in `data/config.yaml`, you can run the application from the project root directory (i.e., the directory named `SpotifyAutoModerator`) using the `spautomod` executable:
 
@@ -304,7 +311,7 @@ Available options:
 * `--rdc` - restore default configuration file;
 * `-l, -loop` - run in loop mode (i.e., run continously in cycles until the user asks to quit).
 
-### Run One Iteration of Playlist Moderation
+#### Run One Iteration of Playlist Moderation
 
 To scan each of your protected playlists once (handling unauthorized additions and removals appropriately) and then quit:
 
@@ -312,7 +319,7 @@ To scan each of your protected playlists once (handling unauthorized additions a
 $> ./spautomod
 ```
 
-### Continuously Moderate Playlists
+#### Continuously Moderate Playlists
 
 Loop mode can be used to run SpotifyAutoModerator continuously until you ask the application to stop. In loop mode, the application will moderate your playlists in iterations and you will have the opportunity to request to quit between iterations. Use the `-l` or `--loop` options to run the application continuously:
 
@@ -324,13 +331,50 @@ or
 $> ./spautomod --loop
 ```
 
+### Running the Application on Windows
+
+Once you have configured your settings in `data/config.yaml` you are able to start the application. This can be done either from PowerShell or from your file explorer.
+
+When used via PowerShell, SpotifyAutoModerator has the following command structure:
+``` shell
+$> ./spautomod.exe [options]
+```
+
+Available options:
+
+* `-h, --help` - show help information for command usage;
+* `--rdc` - restore default configuration file;
+* `-l, -loop` - run in loop mode (i.e., run continously in cycles until the user asks to quit).
+
+
+#### Run One Iteration of Playlist Moderation
+
+To scan each of your protected playlists once (handling unauthorized additions and removals appropriately) and then quit, simply launch the `spautomod.exe` executable from your file explorer by double-clicking it.
+
+Alternatively, run the following command in PowerShell:
+``` powershell
+$> ./spautomod.exe
+```
+
+#### Continuously Moderate Playlists
+
+Loop mode can be used to run SpotifyAutoModerator continuously until you ask the application to stop. In loop mode, the application will moderate your playlists in iterations and you will have the opportunity to request to quit between iterations. To launch in loop mode, right-click the `spautomod-loop` file in the `spautomod4win` folder and select the `Run with PowerShell` option.
+
+Alternatively, in PowerShell, use the `-l` or `--loop` options to run the application continuously:
+``` powershell
+$> ./spautomod.exe -l
+```
+or
+``` powershell
+$> ./spautomod.exe --loop
+```
+
 ## Development
 
 ### Project Roadmap
 
 The following are the current goals of the project:
 * add more complex integration tests;
-* version for Windows;
 * version for Docker.
 
 ### Testing

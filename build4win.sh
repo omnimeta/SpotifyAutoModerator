@@ -14,7 +14,7 @@ fi
 if [ -d dist/data/test ]; then
   rm -r dist/data/test
 fi
-if [ -d dist/data/test ]; then
+if [ -d dist/data/images ]; then
   rm -r dist/data/images
 fi
 
