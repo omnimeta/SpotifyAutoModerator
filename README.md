@@ -371,7 +371,13 @@ $> ./spautomod.exe --loop
 
 ### Troubleshooting
 
-The most common source of errors are mistakes in your configuration file. Check the bottom of log file `data/logs/debug.log` file for the most recent errors that have occurred and update your `data/config.yaml` file accordingly. Additionally, make sure that you have setup the application in the Spotify Dashboard (as described in the installation section) and that you have also added a redirect URI for the application. 
+The most common source of errors are mistakes in your configuration file.
+
+Check the bottom of the log file `data/logs/debug.log` for the most recent errors that have occurred and update your `data/config.yaml` file accordingly.
+
+Ensure that you have (#register-the-application-on-your-spotify-dashboard)[registered the application in the Spotify Dashboard] and confirm that that the same redirect URI registered for the application is set in your `data/config.yaml` file for the `ACCOUNT_CONFIG.REDIRECT_URI` setting.
+
+If you are unable to resolve your problem, feel free to create an issue on this repository and provide the relevant (anonymised) log information from your log file (`data/logs/debug.log` by default).
 
 ## Development
 
