@@ -96,9 +96,10 @@ class TestIntegration(unittest.TestCase):
         api_client_mock.assert_not_called()
 
 
+    @patch('src.main.input', return_value='') # exits on error without user input
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
-    def test_program_run_with_invalid_config_file(self, api_client_mock, config_path_stub):
+    def test_program_run_with_invalid_config_file(self, api_client_mock, config_path_stub, exit_stub):
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
 
@@ -136,9 +137,10 @@ LOG_CONFIG:
         api_client_mock.assert_not_called()
 
 
+    @patch('src.main.input', return_value='') # exits on error without user input
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
-    def test_program_run_with_invalid_config_yaml(self, api_client_mock, config_path_stub):
+    def test_program_run_with_invalid_config_yaml(self, api_client_mock, config_path_stub, exit_stub):
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
         test_config = open(test_config_file, 'w')
@@ -1653,6 +1655,240 @@ LOG_CONFIG:
         # check exit code is correct
         self.assertEqual(sys_exit.exception.code, 0)
 
+
+
+    @patch.object(os, 'environ', {})
+    @patch.object(sys, 'argv', []) # stubbed user input (via program args)
+    @patch('src.integrity_manager.inputimeout') # stubbed user input (via stdin) - disapproval
+    @patch('src.main.inputimeout', return_value='no') # stubbed user input (via stdin) - don't quit after 1st iteration
+    @patch('src.main.get_config_filepath') # allows different config file to be used
+    @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
+    def test_program_run_with_two_playlists_thousand_of_items_in_one_no_loop_mode_no_protect_all(self, api_mock,
+                                                                                                 config_path_stub,
+                                                                                                 loop_input_stub,
+                                                                                                 remove_input_stub):
+        # prepare config file
+        test_config_file = self.test_config_path + '/config.yaml'
+        config_path_stub.return_value = test_config_file
+        test_config = open(test_config_file, 'w')
+        config_data = """
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 5
+  PROTECT_ALL: false
+  GLOBAL_MODE: blacklist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: %s
+  GLOBAL_BLACKLIST: []
+  PROTECTED_PLAYLISTS:
+    - Bach:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx1
+        blacklist:
+          - spotifyuser1
+    - Roslavets:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx2
+        blacklist:
+          - spotifyuser2
+ACCOUNT_CONFIG:
+  USERNAME: testuser
+  CLIENT_ID: testuserclientid
+  CLIENT_SECRET: testuserclientsecret
+  REDIRECT_URI: http://localhost:8080/
+LOG_CONFIG:
+  FILE: %s/info.log
+  CONSOLE_LEVEL: critical
+  FILE_LEVEL: critical
+"""     % (self.test_backup_path, self.test_log_path)
+        test_config.write(config_data)
+        test_config.close()
+
+        pl_ids = [ '%s%d' % (('x' * 21), pl_num) for pl_num in range(1, 3) ]
+        pl_uris = [ 'spotify:playlist:%s' % pl_id for pl_id in pl_ids ]
+        pl_names = [ self.generate_spotify_id() for i in range(0, len(pl_ids)) ] # arbitrary
+
+        def current_user_playlists(limit=50, offset=0):
+            return {
+                'total': 2,
+                'offset': offset,
+                'limit': 50,
+                'items':[
+                    {
+                        'uri': pl_uri,
+                        'owner': {
+                            'id': 'testuser'
+                        },
+                        'collaborative': True
+                    } for pl_uri in pl_uris
+                ]
+            }
+        api_mock.return_value.current_user_playlists = Mock(side_effect=current_user_playlists)
+
+        pl_item_ids = [
+            [ self.generate_spotify_id() for i in range(0, 1001) ] for pl in pl_ids
+        ]
+        pl_item_uris = [
+            [ 'spotify:track:%s' % item_id for item_id in pl ] for pl in pl_item_ids
+        ]
+        pl_item_names = [
+            [ self.generate_spotify_id() for item_id in pl ] for pl in pl_item_ids # arbitrary
+        ]
+        playlist_items = [
+            { # playlist 1 - when checking for unauthorized additions
+                'total': 1001,
+                'limit': 100,
+                'offset': offset,
+                'items': [
+                    { # all of these tracks are unauthorized
+                        'track': {
+                            'uri': pl_item_uris[0][i],
+                            'name': pl_item_names[0][i],
+                            'artists': [
+                                {
+                                    'name': 'artistname'
+                                }
+                            ]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'spotifyuser1'
+                        }
+                    } for i in range(offset, offset + 100)
+                ]
+            } for offset in range(0, 1000, 100)
+        ] + [
+            { # playlist 1 - when checking for unauthorized additions
+                'total': 1001,
+                'limit': 100,
+                'offset': 1000,
+                'items': [ # this track is authorized
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][-1],
+                            'name': pl_item_names[0][-1],
+                            'artists': [
+                                {
+                                    'name': 'artistname'
+                                }
+                            ]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser2'
+                        }
+                    }
+                ]
+            },
+            { # playlist 1 - when taking first backup
+                'total': 1,
+                'limit': 100,
+                'offset': 0,
+                'items': [ # unauthorized tracks were removed
+                    {
+                        'track': {
+                            'uri': pl_item_uris[0][-1],
+                            'name': pl_item_names[0][-1],
+                            'artists': [
+                                {
+                                    'name': 'artistname'
+                                }
+                            ]
+                        },
+                        'added_at': time() - 20000, # arbitrary
+                        'added_by': {
+                            'id': 'unknownuser2'
+                        }
+                    }
+                ]
+            },
+            { # playlist 2 - when checking for unauthorized additions
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': []
+            },
+            { # playlist 2 - when taking first backup
+                'total': 0,
+                'limit': 100,
+                'offset': 0,
+                'items': []
+            }
+        ]
+        api_mock.return_value.playlist_items = Mock(side_effect=playlist_items)
+
+        def playlist(pl_id, fields=None):
+            for index in range(0, len(pl_ids)):
+                if pl_id == pl_ids[index]:
+                    return { 'name': pl_names[index] }
+            return { 'name': 'somerandomplaylistname' }
+        api_mock.return_value.playlist = Mock(side_effect=playlist)
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items = Mock()
+        api_mock.return_value.playlist_add_items = Mock()
+
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+
+        # use API mocks to test for correct interaction with external API
+
+        api_mock.assert_called_once()
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_ID'], 'testuserclientid')
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
+        self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
+
+        self.assertEqual(api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_count, 10)
+        for call in range(0, 10):
+            self.assertEqual(api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_args_list[call][0][0], pl_ids[0])
+            self.assertEqual(api_mock.return_value.playlist_remove_specific_occurrences_of_items.call_args_list[call][0][1], [
+                {
+                    'uri': pl_item_uris[0][i],
+                    'positions': [ i ]
+                } for i in range(call * 100, (call + 1) * 100)
+            ])
+
+        self.assertEqual(api_mock.return_value.playlist_items.call_count, len(playlist_items))
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[0][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[1][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[2][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[3][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[4][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[5][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[6][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[7][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[8][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[9][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[10][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[11][0][0], pl_ids[0])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[12][0][0], pl_ids[1])
+        self.assertEqual(api_mock.return_value.playlist_items.call_args_list[13][0][0], pl_ids[1])
+
+        self.assertEqual(api_mock.return_value.playlist_add_items.call_count, 0)
+
+        # user isn't acces for input because no loop mode
+        self.assertEqual(loop_input_stub.call_count, 0)
+
+        # no unauthorized removals
+        remove_input_stub.assert_not_called()
+
+        # use backups to test for correct end-state
+
+        backups = [ self.get_backups(pl_id) for pl_id in pl_ids ]
+        self.assertEqual(self.get_backup_data(backups[0][0]), {
+            'name': pl_names[0],
+            'items': [
+                {
+                    'name': pl_item_names[0][-1],
+                    'uri': pl_item_uris[0][-1],
+                    'artists': 'artistname',
+                    'position': 0
+                }
+            ]
+        })
+        self.assertEqual(self.get_backup_data(backups[1][0]), {
+            'name': pl_names[1],
+            'items': []
+        })
+
+        # check exit code is correct
+        self.assertEqual(sys_exit.exception.code, 0)
 
 
 if __name__ == '__main__':

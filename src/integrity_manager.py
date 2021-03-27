@@ -20,34 +20,33 @@ class IntegrityManager:
 
     def run(self, playlist):
         pl_id = self.spotify_helper.get_playlist_id(playlist)
-        self.logger.info('Verifying integrity of playlist with ID \'%s\'', pl_id)
-
         latest_backup = self.find_latest_backup(pl_id)
         if latest_backup is None:
-            self.logger.info('Playlist with ID \'%s\' currently has no backup for comparison', pl_id)
+            self.logger.info('Playlist has no backup for comparison (PID: %s)', pl_id)
             self.backup_playlist(pl_id)
             return
 
+        self.logger.info('Checking if any tracks were removed (PID: %s)', pl_id)
         removals = self.get_removals(pl_id, latest_backup)
         try:
             unapproved_removals = self.get_unapproved_removals(removals, latest_backup['name'])
         except TimeoutOccurred as err:
-            self.logger.warning('No response given for an approval request')
-            self.logger.warning('Skipping track restoration for playlist with ID \'%s\' until next run', pl_id)
+            self.logger.warning('No response given for an approval request (PID: %s)', pl_id)
+            self.logger.warning('Skipping track restoration until next run (PID: %s)', pl_id)
             return
 
         if isinstance(unapproved_removals, list) and len(unapproved_removals) > 0:
             try:
                 self._restore_removals(pl_id, unapproved_removals)
             except Exception as err:
-                self.logger.error('Failed to restore unapproved removals. Error: \'%s\'', err)
+                self.logger.error('Failed to restore unapproved removals (PID: %s). Error: \'%s\'', pl_id, err)
                 return
             else:
-                self.logger.info('Successfully restored unapproved removals')
+                self.logger.info('Successfully restored unapproved removals (PID: )', pl_id)
 
         self.backup_playlist(pl_id)
         self.manage_redundant_backups(pl_id)
-        self.logger.info('Integrity of playlist with ID \'%s\' has been verified', pl_id)
+        self.logger.debug('Completed verification of playlist integrity (PID: %s)', pl_id)
 
 
     def find_latest_backup(self, playlist_id):
@@ -104,7 +103,7 @@ class IntegrityManager:
             playlist_id, fields='items(track(name,uri, artists.name)),total', api=self.api)
         formatted_items = []
 
-        self.logger.info("Backing up playlist with ID \'%s\'", playlist_id)
+        self.logger.info('Backing up playlist contents (PID: %s)', playlist_id)
         for item in playlist_items:
             formatted_items.append({
                 'name': item['track']['name'],
@@ -121,12 +120,12 @@ class IntegrityManager:
         }
 
         backup_file_path = '%s/%s_%s.backup.json' % (self.config['BACKUP_PATH'], playlist_id, str(time()))
-        self.logger.debug('Saving backup \'%s\'', backup_file_path)
+        self.logger.debug('Saving playlist backup as \'%s\' (PID: %s)', backup_file_path, playlist_id)
         backup_file = open(backup_file_path, 'w')
         backup_file.write(json.dumps(backup))
         backup_file.close()
         sleep(0.2) # for stability
-        self.logger.info("Completed backup of playlist with ID \'%s\'", playlist_id)
+        self.logger.debug('Playlist backup was saved successfully (PID: %s)', playlist_id)
 
 
     def manage_redundant_backups(self, playlist_id):
@@ -146,15 +145,14 @@ class IntegrityManager:
 
         num_backups = len(relevant_backups)
         if num_backups > desired_num_backups:
-            self.logger.info('Playlist with ID \'%s\' has more backups than the desired maximum', playlist_id)
-            self.logger.info('Deleting redundant backups for playlist with ID \'%s\'', playlist_id)
+            self.logger.debug('Deleting redundant playlist backups (PID: %s)', playlist_id)
 
             # as expected, the oldest, most out-of-date backups are deleted
             relevant_backups.sort(key=lambda x: x['timestamp'], reverse=False)
             for index in range(0, num_backups - desired_num_backups):
                 self.logger.debug('Deleting backup \'%s\'', relevant_backups[index]['filename'])
                 os.remove(relevant_backups[index]['filename'])
-            self.logger.info('Completed deletion of redundant backups for playlist with ID \'%s\'', playlist_id)
+            self.logger.debug('Completed deletion of redundant backups (PID: %s)', playlist_id)
 
 
     def _user_approves_removal(self, removal, playlist_name, timeout_after_secs):
@@ -179,7 +177,7 @@ class IntegrityManager:
 
     def _restore_removals(self, playlist_id, removals):
         for removal in removals:
-            self.logger.info('Restoring track \'%s\'', removal['name'])
+            self.logger.info('Restoring track \'%s\' (PID: %s)', removal['name'], playlist_id)
         self.spotify_helper.add_items_to_playlist(playlist_id, removals)
 
 

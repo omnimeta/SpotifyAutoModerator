@@ -26,6 +26,7 @@ class TestPlaylistCleaner(unittest.TestCase):
 
     def test_run_removes_only_unauthorized_items(self):
         mock_api = spotipy.client.Spotify()
+        mock_api.playlist = Mock(return_value={'name': 'myplaylist'})
         pl_id = self.generate_spotify_id()
         config = {
             'PROTECT_ALL': False,

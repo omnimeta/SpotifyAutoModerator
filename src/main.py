@@ -15,9 +15,9 @@ def main():
 
     if '-h' in sys.argv or '--help' in sys.argv:
         print_help_information()
-        sys.exit(0)
+        exit_with_code(0)
     elif '--rdc' in sys.argv:
-        sys.exit(restore_default_config_file())
+        exit_with_code(restore_default_config_file())
 
     # An erroneous configuration may result in some playlist data loss
     # All configuration-file related issues must be therefore be resolved before proceeding
@@ -26,18 +26,18 @@ def main():
     except Exception as err:
         print('Error: \'%s\'' % err)
         print('Invalid configuration file')
-        sys.exit(1)
+        exit_with_code(1)
 
     config_validator = ConfigValidator(playlist_config, log_config, account_config)
     if not config_validator.is_valid():
         print('Invalid configuration file')
-        sys.exit(1)
+        exit_with_code(1)
 
     try:
         logger = setup_logger(log_config)
     except Exception as err:
         print('Error: \'$s\'' % err)
-        sys.exit(1)
+        exit_with_code(1)
 
     logger.info('Starting new session of SpotifyAutoModerator')
     try:
@@ -51,11 +51,11 @@ def main():
     except Exception as err:
         logger.error('Error: \'%s\'', err)
         logger.error('Confirm your Spotify client/account details are correct in `data/config.yaml`')
-        sys.exit(1)
+        exit_with_code(1)
 
     if not config_validator.all_protected_playlists_exist(api_client):
         logger.error('Invalid configuration file')
-        sys.exit(1)
+        exit_with_code(1)
 
     moderate_playlists(logger, api_client, account_config['USERNAME'], playlist_config)
     sys.exit(0)
@@ -78,6 +78,7 @@ def moderate_playlists(logger, api_client, username, playlist_config):
                         protected_playlists.append(val)
 
         for playlist in protected_playlists:
+            print('') # newlines between playlists improves readibility of logs
             playlist_cleaner.run(playlist)
             integrity_manager.run(playlist)
 
@@ -131,7 +132,7 @@ def setup_logger(config):
 
 def user_wants_to_exit(timeout_after_secs):
     try:
-        input = inputimeout(prompt='Do you want to quit? (Y/n): ', timeout=timeout_after_secs)
+        input = inputimeout(prompt='\nDo you want to quit? (Y/n): ', timeout=timeout_after_secs)
         if input in ['Y', 'y', 'YES', 'Yes', 'yes']:
             return True
     except TimeoutOccurred:
@@ -197,6 +198,19 @@ def restore_default_config_file():
 def get_config_filepath():
     # This function allows other paths to be more conveniently used during testing
     return 'data/config.yaml'
+
+
+def exit_with_code(exit_code):
+    # On Windows, PowerShell closes immediately after the program exits. If the program exits
+    # due to an error, the user is not able to see the error unless they check the log file.
+    # This method is used to allow the user to view any errors and inform them of where they
+    # can find more information about what went wrong.
+
+    if exit_code != 0:
+        print('Check the log file (\'data/logs/debug.log\' by default) for more information')
+        print('Press ENTER to exit')
+        input()
+    sys.exit(exit_code)
 
 
 def print_help_information():

@@ -10,8 +10,10 @@ class PlaylistCleaner:
         self.spotify_helper = SpotifyHelper(self.logger)
 
     def run(self, playlist):
-        self.logger.info('Initiating playlist scanning/cleaning procedure')
         playlist_id = self.spotify_helper.get_playlist_id(playlist)
+        pl_details = self.api.playlist(playlist_id, fields='name')
+        self.logger.info('Scanning playlist \'%s\' for unauthorized additions (PID: %s)',
+                         pl_details['name'], playlist_id)
         unauth_additions = self.find_unauthorized_additions(playlist_id)
         if len(unauth_additions) > 0:
             self.remove_playlist_items(playlist_id, unauth_additions)
@@ -33,15 +35,13 @@ class PlaylistCleaner:
                     'position': item['position']
                 })
 
-        pl_details = self.api.playlist(playlist_id, fields='name')
-        self.logger.info('Identified %d unauthorized track additions to playlist \'%s\' (ID: %s)'
-                         % (len(unauth_additions), pl_details['name'], playlist_id))
+        self.logger.debug('Identified %d unauthorized track additions (PID: %s)'
+                          % (len(unauth_additions), playlist_id))
 
         return unauth_additions
 
 
     def remove_playlist_items(self, playlist_id, items):
-        pl_details = self.api.playlist(playlist_id, fields='name')
         items_with_pos = [
             {
                 'uri': item['uri'],
@@ -53,7 +53,7 @@ class PlaylistCleaner:
         upper_bound = 100
         more_to_process = True
 
-        self._log_playlist_item_removal(pl_details['name'], items)
+        self._log_playlist_item_removal(playlist_id, items)
         while more_to_process:
             more_to_process = upper_bound < len(items_with_pos)
             self.api.playlist_remove_specific_occurrences_of_items(playlist_id, items_with_pos[lower_bound:upper_bound])
@@ -103,10 +103,10 @@ class PlaylistCleaner:
         return 'neutral'
 
 
-    def _log_playlist_item_removal(self, playlist_name, items):
+    def _log_playlist_item_removal(self, playlist_id, items):
         for item in items:
-            self.logger.info('REMOVING: \'%s\' added by user \'%s\' at %s (URI: %s) from playlist \'%s\''
-                             % (item['name'], item['added_by'], item['added_at'], item['uri'], playlist_name))
+            self.logger.info('Removing \'%s\' added by user \'%s\' at %s (Track URI: %s) (PID: %s)'
+                             % (item['name'], item['added_by'], item['added_at'], item['uri'], playlist_id))
 
     def _get_playlist_config(self, playlist_id):
         pl_uri = 'spotify:playlist:' + playlist_id

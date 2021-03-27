@@ -38,8 +38,9 @@ class TestMain(unittest.TestCase):
         self.assertEqual(sys_exit.exception.code, 0)
 
 
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.restore_default_config_file')
-    def test_main_returns_return_value_of_restore_config_if_rdc_option_in_args(self, restore_stub):
+    def test_main_returns_return_value_of_restore_config_if_rdc_option_in_args(self, restore_stub, exit_stub):
         with patch.object(sys, 'argv', ['--rdc']) as stubbed_args:
             restore_stub.return_value = 0
             with self.assertRaises(SystemExit) as sys_exit:
@@ -52,17 +53,21 @@ class TestMain(unittest.TestCase):
             self.assertEqual(sys_exit.exception.code, 1)
 
 
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.load_configurations', side_effect=Exception('something went wrong'))
-    def test_main_exits_with_code_1_if_exception_raised_while_loading_configurations(self, load_config_mock):
+    def test_main_exits_with_code_1_if_exception_raised_while_loading_configurations(self, load_config_mock,
+                                                                                     exit_stub):
         with self.assertRaises(SystemExit) as sys_exit:
             main.main()
         load_config_mock.assert_called_once()
         self.assertEqual(sys_exit.exception.code, 1)
 
 
+    @patch('src.main.input', return_value='') # exits on error without user input
     @patch('src.main.load_configurations', return_value=({}, {}, {}))
     @patch('src.main.ConfigValidator')
-    def test_main_validates_configurations_before_setting_up_a_logger(self, config_validator_mock, load_config_stub):
+    def test_main_validates_configurations_before_setting_up_a_logger(self, config_validator_mock,
+                                                                      load_config_stub, exit_stub):
         # The stubbed return value of (False) is_valid() allows main() to quit early
         mock_validator = Mock()
         mock_validator.is_valid = Mock(return_value=False)
@@ -72,8 +77,9 @@ class TestMain(unittest.TestCase):
         mock_validator.is_valid.assert_called_once()
 
 
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.ConfigValidator')
-    def test_main_exits_with_code_1_if_config_validation_fails(self, config_validator_mock):
+    def test_main_exits_with_code_1_if_config_validation_fails(self, config_validator_mock, exit_stub):
         mock_validator = Mock()
         mock_validator.is_valid = Mock(return_value=False)
         config_validator_mock.return_value = mock_validator
@@ -82,11 +88,13 @@ class TestMain(unittest.TestCase):
         self.assertEqual(sys_exit.exception.code, 1)
 
 
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.load_configurations', return_value=({}, {}, {}))
     @patch('src.main.setup_logger', side_effect=Exception('something went wrong'))
     @patch('src.main.ConfigValidator')
     def test_main_exits_with_code_1_if_an_exception_is_raised_when_setting_up_a_loger(self, config_validator_mock,
-                                                                                      setup_logger_mock, load_config_stub):
+                                                                                      setup_logger_mock, load_config_stub,
+                                                                                      exit_stub):
         mock_validator = Mock()
         # stubbing is_valid to return True allows the function to continue running beyond validation
         mock_validator.is_valid = Mock(return_value=True)
@@ -94,6 +102,7 @@ class TestMain(unittest.TestCase):
         self.assertRaises(Exception, main.main)
 
 
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.SpotifyHelper')
     @patch('src.main.setup_logger')
     @patch('src.main.ConfigValidator')
@@ -102,8 +111,8 @@ class TestMain(unittest.TestCase):
         'CLIENT_SECRET': 'spotifyclientsecret',
         'REDIRECT_URI': 'http://localhost:8080'
     }))
-    def test_main_exits_with_code_1if_api_client_setup_fails(self, get_config_stub, config_validator_mock,
-                                                             setup_logger_mock, helper_mock):
+    def test_main_exits_with_code_1_if_api_client_setup_fails(self, get_config_stub, config_validator_mock,
+                                                             setup_logger_mock, helper_mock, exit_stub):
         mock_validator = Mock()
         # stubbing is_valid to return True allows the function to continue running beyond validation
         mock_validator.is_valid = Mock(return_value=True)
@@ -299,6 +308,7 @@ class TestMain(unittest.TestCase):
         self.assertEqual(sys_exit.exception.code, 0)
 
 
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.moderate_playlists')
     @patch('src.main.PlaylistCleaner')
     @patch('src.main.IntegrityManager')
@@ -308,7 +318,7 @@ class TestMain(unittest.TestCase):
     @patch('src.main.load_configurations')
     def test_main_exits_with_code_1_if_not_all_protected_playlists_exist(self, get_config_stub, config_validator_mock,
                                                                          setup_logger_mock, helper_mock, integrity_mgr_mock,
-                                                                         cleaner_mock, moderate_playlists_mock):
+                                                                         cleaner_mock, moderate_playlists_mock, exit_stub):
 
         only_playlist = { 'uri': self.generate_playlist_uri() }
         get_config_stub.return_value = ({
