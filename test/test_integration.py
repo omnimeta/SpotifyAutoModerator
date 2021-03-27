@@ -1656,7 +1656,6 @@ LOG_CONFIG:
         self.assertEqual(sys_exit.exception.code, 0)
 
 
-
     @patch.object(os, 'environ', {})
     @patch.object(sys, 'argv', []) # stubbed user input (via program args)
     @patch('src.integrity_manager.inputimeout') # stubbed user input (via stdin) - disapproval
@@ -1889,6 +1888,105 @@ LOG_CONFIG:
 
         # check exit code is correct
         self.assertEqual(sys_exit.exception.code, 0)
+
+
+    @patch.object(os, 'environ', {})
+    @patch.object(sys, 'argv', [ '-l' ]) # stubbed user input (via program args)
+    @patch('src.main.input', return_value='') # stubbed user input (via stdin) - used to check program doesnt exit immediately
+    @patch('src.main.inputimeout', return_value='no') # stubbed user input (via stdin)
+    @patch('src.main.get_config_filepath') # allows different config file to be used
+    @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
+    def test_program_run_with_raised_error_during_moderation(self, api_mock, config_path_stub,
+                                                             loop_input_stub, input_mock):
+        # prepare config file
+        test_config_file = self.test_config_path + '/config.yaml'
+        config_path_stub.return_value = test_config_file
+        test_config = open(test_config_file, 'w')
+        config_data = """
+PLAYLIST_CONFIG:
+  DELAY_BETWEEN_SCANS: 5
+  PROTECT_ALL: false
+  GLOBAL_MODE: whitelist
+  MAX_BACKUPS_PER_PLAYLIST: 1
+  BACKUP_PATH: %s
+  GLOBAL_BLACKLIST: []
+  GLOBAL_WHITELIST: []
+  PROTECTED_PLAYLISTS:
+    - Bach:
+        uri: spotify:playlist:xxxxxxxxxxxxxxxxxxxxx1
+ACCOUNT_CONFIG:
+  USERNAME: testuser
+  CLIENT_ID: testuserclientid
+  CLIENT_SECRET: testuserclientsecret
+  REDIRECT_URI: http://localhost:8080/
+LOG_CONFIG:
+  FILE: %s/info.log
+  CONSOLE_LEVEL: critical
+  FILE_LEVEL: critical
+"""     % (self.test_backup_path, self.test_log_path)
+        test_config.write(config_data)
+        test_config.close()
+
+        pl_ids = [ '%s%d' % (('x' * 21), pl_num) for pl_num in range(1, 2) ]
+        pl_uris = [ 'spotify:playlist:%s' % pl_id for pl_id in pl_ids ]
+        pl_names = [ self.generate_spotify_id() for i in range(0, len(pl_ids)) ] # arbitrary
+
+        def current_user_playlists(limit=50, offset=0):
+            return {
+                'total': 1,
+                'offset': offset,
+                'limit': 50,
+                'items':[
+                    {
+                        'uri': pl_uri,
+                        'owner': {
+                            'id': 'testuser'
+                        },
+                        'collaborative': True
+                    } for pl_uri in pl_uris
+                ]
+            }
+        api_mock.return_value.current_user_playlists = Mock(side_effect=current_user_playlists)
+
+        # playlist has one track which gets removed before the first iteration
+        # the user gives no response when asked for approval of the removal
+        # playlist isn't restored and user is asked again on second time (and user disapproves)
+        api_mock.return_value.playlist_items = Mock(side_effect=Exception('401 unauthorized'))
+
+        def playlist(pl_id, fields=None):
+            for index in range(0, len(pl_ids)):
+                if pl_id == pl_ids[index]:
+                    return { 'name': pl_names[index] }
+            return { 'name': 'somerandomplaylistname' }
+        api_mock.return_value.playlist = Mock(side_effect=playlist)
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items = Mock()
+        api_mock.return_value.playlist_add_items = Mock()
+
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+
+        # use API mocks to test for correct interaction with external API
+
+        api_mock.assert_called_once()
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_ID'], 'testuserclientid')
+        self.assertEqual(os.environ['SPOTIPY_CLIENT_SECRET'], 'testuserclientsecret')
+        self.assertEqual(os.environ['SPOTIPY_REDIRECT_URI'], 'http://localhost:8080/')
+
+        api_mock.return_value.playlist_remove_specific_occurrences_of_items.assert_not_called()
+        api_mock.return_value.playlist_add_items.assert_not_called()
+        loop_input_stub.assert_not_called()
+
+        # use backups to test for correct end-state
+
+        for pl_id in pl_ids:
+            self.assertEqual(len(self.get_backups(pl_id)), 0)
+
+        # check waited for user input before exit
+        input_mock.assert_called_once()
+
+        # check exit code is correct
+        self.assertEqual(sys_exit.exception.code, 1)
 
 
 if __name__ == '__main__':
