@@ -214,8 +214,8 @@ def exit_with_code(exit_code):
 
     if exit_code != 0:
         print('Check the log file (\'data/logs/debug.log\' by default) for more information')
-        print('Press ENTER to exit')
-        input()
+    print('Press ENTER to exit')
+    input()
     sys.exit(exit_code)
 
 
