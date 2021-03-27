@@ -66,8 +66,9 @@ class TestIntegration(unittest.TestCase):
 
 
     @patch.object(sys, 'argv', [ '-h' ]) # stubbed user input
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.spotipy.client.Spotify') # used to monitor behaviour
-    def test_program_run_with_help_function(self, api_client_mock):
+    def test_program_run_with_help_function(self, api_client_mock, exit_stub):
         with self.assertRaises(SystemExit) as sys_exit:
             main.main()
         self.assertEqual(sys_exit.exception.code, 0)
@@ -75,11 +76,12 @@ class TestIntegration(unittest.TestCase):
 
 
     @patch.object(sys, 'argv', [ '--rdc' ]) # stubbed user input
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.main.inputimeout', return_value='Y') # stubbed user input
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.client.Spotify') # used to monitor behaviour
     def test_program_run_with_restore_default_config_function(self, api_client_mock, config_path_stub,
-                                                              user_input_stub):
+                                                              user_input_stub, exit_stub):
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
         with self.assertRaises(SystemExit) as sys_exit:
@@ -154,12 +156,14 @@ LOG_CONFIG:
 
 
     @patch.object(os, 'environ', {})
+    @patch('src.main.input', return_value='') # exits on error w/o user input
     @patch('src.integrity_manager.inputimeout', side_effect=[ 'no', 'yes', 'no' ]) # stubbed user input
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
     def test_program_run_simple_with_simple_playlist_config_no_protect_all_no_loop_mode(self, api_mock,
                                                                                         config_path_stub,
-                                                                                        user_input_stub):
+                                                                                        user_input_stub,
+                                                                                        exit_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
@@ -560,12 +564,14 @@ LOG_CONFIG:
 
 
     @patch.object(os, 'environ', {})
+    @patch('src.main.input', return_value='') # exits w/o user input
     @patch('src.integrity_manager.inputimeout', return_value='no') # stubbed user input
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
     def test_program_run_with_disagreeing_auth_levels_and_protect_all_no_loop_mode(self, api_mock,
                                                                                    config_path_stub,
-                                                                                   user_input_stub):
+                                                                                   user_input_stub,
+                                                                                   exit_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
@@ -802,12 +808,14 @@ LOG_CONFIG:
 
     @patch.object(os, 'environ', {})
     @patch.object(sys, 'argv', [ '-l' ]) # stubbed user input (via program args)
+    @patch('src.main.input', return_value='') # exits w/o user input
     @patch('src.integrity_manager.inputimeout', return_value='no') # stubbed user input (via stdin) - disapproval
     @patch('src.main.inputimeout', side_effect=['no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
     def test_program_run_with_simple_config_with_protect_all_and_loop_mode(self, api_mock, config_path_stub,
-                                                                           loop_input_stub, remove_input_stub):
+                                                                           loop_input_stub, remove_input_stub,
+                                                                           exit_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
@@ -1083,6 +1091,7 @@ LOG_CONFIG:
 
     @patch.object(os, 'environ', {})
     @patch.object(sys, 'argv', [ '--loop' ]) # stubbed user input (via program args)
+    @patch('src.main.input', return_value='') # exits w/o user input
     @patch('src.integrity_manager.inputimeout') # stubbed user input (via stdin) - disapproval
     @patch('src.main.inputimeout', side_effect=['no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
     @patch('src.main.get_config_filepath') # allows different config file to be used
@@ -1090,7 +1099,8 @@ LOG_CONFIG:
     def test_program_run_with_no_protect_all_one_playlist_and_rearranged_tracks_with_loop_mode(self, api_mock,
                                                                                                config_path_stub,
                                                                                                loop_input_stub,
-                                                                                               remove_input_stub):
+                                                                                               remove_input_stub,
+                                                                                               exit_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
@@ -1424,14 +1434,16 @@ LOG_CONFIG:
 
     @patch.object(os, 'environ', {})
     @patch.object(sys, 'argv', [ '-l' ]) # stubbed user input (via program args)
+    @patch('src.main.input', return_value='') # exits w/o user input
     @patch('src.integrity_manager.inputimeout', side_effect=[ TimeoutOccurred(), 'no' ]) # stubbed user input (via stdin) - disapproval
     @patch('src.main.inputimeout', side_effect=['no', 'no', 'yes']) # stubbed user input (via stdin) - don't quit after 1st iteration
     @patch('src.main.get_config_filepath') # allows different config file to be used
     @patch('src.main.spotipy.Spotify', return_value=spotipy.client.Spotify()) # used to monitor behaviour
     def test_program_run_with_no_protect_all_one_playlist_and_unapproved_removals_with_loop_mode(self, api_mock,
-                                                                                                config_path_stub,
-                                                                                                loop_input_stub,
-                                                                                                remove_input_stub):
+                                                                                                 config_path_stub,
+                                                                                                 loop_input_stub,
+                                                                                                 remove_input_stub,
+                                                                                                 exit_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file
@@ -1658,6 +1670,7 @@ LOG_CONFIG:
 
     @patch.object(os, 'environ', {})
     @patch.object(sys, 'argv', []) # stubbed user input (via program args)
+    @patch('src.main.input', return_value='') # exits w/o user input
     @patch('src.integrity_manager.inputimeout') # stubbed user input (via stdin) - disapproval
     @patch('src.main.inputimeout', return_value='no') # stubbed user input (via stdin) - don't quit after 1st iteration
     @patch('src.main.get_config_filepath') # allows different config file to be used
@@ -1665,7 +1678,8 @@ LOG_CONFIG:
     def test_program_run_with_two_playlists_thousand_of_items_in_one_no_loop_mode_no_protect_all(self, api_mock,
                                                                                                  config_path_stub,
                                                                                                  loop_input_stub,
-                                                                                                 remove_input_stub):
+                                                                                                 remove_input_stub,
+                                                                                                 exit_stub):
         # prepare config file
         test_config_file = self.test_config_path + '/config.yaml'
         config_path_stub.return_value = test_config_file

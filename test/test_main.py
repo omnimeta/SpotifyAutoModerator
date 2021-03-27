@@ -23,8 +23,9 @@ class TestMain(unittest.TestCase):
 
     # ----- Tests for main ----- #
 
+    @patch('src.main.input', return_value='') # exit w/o user input
     @patch('src.main.print_help_information', side_effect=main.print_help_information)
-    def test_main_prints_help_info_and_exits_with_code_0_if_help_option_in_args(self, print_help_mock):
+    def test_main_prints_help_info_and_exits_with_code_0_if_help_option_in_args(self, print_help_mock, exit_stub):
         with patch.object(sys, 'argv', [ '--help' ]) as stubbed_args:
             with self.assertRaises(SystemExit) as sys_exit:
                 main.main()
@@ -158,6 +159,7 @@ class TestMain(unittest.TestCase):
         self.assertEqual(sys_exit.exception.code, 1)
 
 
+    @patch('src.main.input', return_value='') # exit w/o user input
     @patch('src.main.PlaylistCleaner')
     @patch('src.main.IntegrityManager')
     @patch('src.main.SpotifyHelper')
@@ -166,7 +168,7 @@ class TestMain(unittest.TestCase):
     @patch('src.main.load_configurations')
     def test_main_runs_one_playlist_moderation_loop_if_loop_mode_is_disabled(self, get_config_stub, config_validator_mock,
                                                                              setup_logger_mock, helper_mock, integrity_mgr_mock,
-                                                                             cleaner_mock):
+                                                                             cleaner_mock, exit_stub):
         # loop mode is only enabled if '--loop' in args so it is disabled by default
 
         only_playlist = { 'uri': self.generate_playlist_uri() }
@@ -203,6 +205,7 @@ class TestMain(unittest.TestCase):
         playlist_cleaner_obj.run.assert_called_once_with(only_playlist)
 
 
+    @patch('src.main.input', return_value='') # exit w/o user input
     @patch('src.main.PlaylistCleaner')
     @patch('src.main.IntegrityManager')
     @patch('src.main.SpotifyHelper')
@@ -211,7 +214,7 @@ class TestMain(unittest.TestCase):
     @patch('src.main.load_configurations')
     def test_main_runs_protects_all_collab_playlist_if_protect_all_is_enabled(self, get_config_stub, config_validator_mock,
                                                                               setup_logger_mock, helper_mock, integrity_mgr_mock,
-                                                                              cleaner_mock):
+                                                                              cleaner_mock, exit_stub):
 
         get_config_stub.return_value = ({
             'PROTECT_ALL': True,
@@ -248,6 +251,7 @@ class TestMain(unittest.TestCase):
         playlist_cleaner_obj.run.assert_called_once_with(only_collab_playlists[0])
 
 
+    @patch('src.main.input', return_value='') # exit w/o user input
     @patch.object(sys, 'argv', [ '--loop' ])
     @patch('src.main.user_wants_to_exit', side_effect=[False, True])
     @patch('src.main.PlaylistCleaner')
@@ -258,7 +262,7 @@ class TestMain(unittest.TestCase):
     @patch('src.main.load_configurations')
     def test_main_runs_playlist_moderation_until_user_wants_to_exit_if_loop_mode_enabled(self, get_config_stub, config_validator_mock,
                                                                                          setup_logger_mock, helper_mock, integrity_mgr_mock,
-                                                                                         cleaner_mock, user_exit_mock):
+                                                                                         cleaner_mock, user_exit_mock, exit_stub):
 
         only_playlist = { 'uri': self.generate_playlist_uri() }
         get_config_stub.return_value = ({
@@ -304,6 +308,7 @@ class TestMain(unittest.TestCase):
         self.assertEqual(len(playlist_cleaner_obj.run.call_args_list[1][0]), 1)
 
 
+    @patch('src.main.input', return_value='') # exit w/o user input
     @patch('src.main.PlaylistCleaner')
     @patch('src.main.IntegrityManager')
     @patch('src.main.SpotifyHelper')
@@ -312,7 +317,7 @@ class TestMain(unittest.TestCase):
     @patch('src.main.load_configurations')
     def test_main_exits_with_code_0_after_running_successfully(self, get_config_stub, config_validator_mock,
                                                                setup_logger_mock, helper_mock, integrity_mgr_mock,
-                                                               cleaner_mock):
+                                                               cleaner_mock, exit_stub):
 
         only_playlist = { 'uri': self.generate_playlist_uri() }
         get_config_stub.return_value = ({
