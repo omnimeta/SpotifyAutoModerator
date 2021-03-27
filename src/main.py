@@ -19,28 +19,16 @@ def main():
     elif '--rdc' in sys.argv:
         exit_with_code(restore_default_config_file())
 
-    # An erroneous configuration may result in some playlist data loss
-    # All configuration-file related issues must be therefore be resolved before proceeding
     try:
+        logger = default_logger() # used for error logging before custom logger can be configured
         (playlist_config, log_config, account_config) = load_configurations(path=get_config_filepath())
-    except Exception as err:
-        print('Error: \'%s\'' % err)
-        print('Invalid configuration file')
-        exit_with_code(1)
+        config_validator = ConfigValidator(playlist_config, log_config, account_config)
+        if not config_validator.is_valid():
+            raise Exception('Invalid configuration file - check \'data/config.yaml\'')
 
-    config_validator = ConfigValidator(playlist_config, log_config, account_config)
-    if not config_validator.is_valid():
-        print('Invalid configuration file')
-        exit_with_code(1)
+        logger = setup_logger(log_config) # custom logger based on user's config
+        logger.info('Starting new session of SpotifyAutoModerator')
 
-    try:
-        logger = setup_logger(log_config)
-    except Exception as err:
-        print('Error: \'$s\'' % err)
-        exit_with_code(1)
-
-    logger.info('Starting new session of SpotifyAutoModerator')
-    try:
         api_client = SpotifyHelper(logger).configure_api(
             account_config['CLIENT_ID'],
             account_config['CLIENT_SECRET'],
@@ -48,17 +36,26 @@ def main():
         )
         if not isinstance(api_client, spotipy.client.Spotify):
             raise Exception('Failed to authenticate with Spotify')
+        elif not config_validator.all_protected_playlists_exist(api_client):
+            raise Exception('Could not find all protected playlists in Spotify')
+
+        moderate_playlists(logger, api_client, account_config['USERNAME'], playlist_config)
+
+    except OSError as err:
+        logger.error('Error: \'%s\'', err)
+        if 'Address already in use' in str(err):
+            logger.error('Redirect URI \'%s\' is already in use', account_config['REDIRECT_URI'])
+            logger.error('Try to use a different (free) port number and add this address to the'
+                         + 'application in the Spotify Developer Dashboard')
+        exit_with_code(1)
+
     except Exception as err:
         logger.error('Error: \'%s\'', err)
-        logger.error('Confirm your Spotify client/account details are correct in `data/config.yaml`')
+        if '401' in str(err):
+            logger.error('Confirm your account/client details are correct')
         exit_with_code(1)
 
-    if not config_validator.all_protected_playlists_exist(api_client):
-        logger.error('Invalid configuration file')
-        exit_with_code(1)
-
-    moderate_playlists(logger, api_client, account_config['USERNAME'], playlist_config)
-    sys.exit(0)
+    exit_with_code(0)
 
 
 def moderate_playlists(logger, api_client, username, playlist_config):
@@ -93,6 +90,15 @@ def moderate_playlists(logger, api_client, username, playlist_config):
                 break
     else:
         protect_playlists()
+
+
+def default_logger():
+    logger = logging.getLogger('spautomod-default')
+    logger.setLevel('INFO')
+    handler = logging.StreamHandler(stream=sys.stdout)
+    handler.setLevel('INFO')
+    logger.addHandler(handler)
+    return logger
 
 
 def setup_logger(config):

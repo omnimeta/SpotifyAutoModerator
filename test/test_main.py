@@ -99,7 +99,9 @@ class TestMain(unittest.TestCase):
         # stubbing is_valid to return True allows the function to continue running beyond validation
         mock_validator.is_valid = Mock(return_value=True)
         config_validator_mock.return_value = mock_validator
-        self.assertRaises(Exception, main.main)
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+        self.assertEqual(sys_exit.exception.code, 1)
 
 
     @patch('src.main.input', return_value='') # exits on error w/o user input
@@ -119,8 +121,37 @@ class TestMain(unittest.TestCase):
         config_validator_mock.return_value = mock_validator
 
         configure_api_stub = Mock()
-        # the following stubbed return value should cause the exit
-        configure_api_stub.configure_api.return_value = None
+        configure_api_stub.configure_api.side_effect = Exception('401 unauthorized')
+        helper_mock.return_value = configure_api_stub
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+        self.assertEqual(sys_exit.exception.code, 1)
+
+        configure_api_stub.configure_api.side_effect = [ None ]
+        with self.assertRaises(SystemExit) as sys_exit:
+            main.main()
+        self.assertEqual(sys_exit.exception.code, 1)
+
+
+    @patch('src.main.input', return_value='') # exits on error w/o user input
+    @patch('src.main.SpotifyHelper')
+    @patch('src.main.setup_logger')
+    @patch('src.main.ConfigValidator')
+    @patch('src.main.load_configurations', return_value=({}, {}, {
+        'CLIENT_ID': 'spotifyclientid',
+        'CLIENT_SECRET': 'spotifyclientsecret',
+        'REDIRECT_URI': 'http://localhost:8080'
+    }))
+    def test_main_exits_with_code_1_if_redirect_uri_is_in_use(self, get_config_stub, config_validator_mock,
+                                                              setup_logger_mock, helper_mock, exit_stub):
+        mock_validator = Mock()
+        # stubbing is_valid to return True allows the function to continue running beyond validation
+        mock_validator.is_valid = Mock(return_value=True)
+        config_validator_mock.return_value = mock_validator
+
+        configure_api_stub = Mock()
+        # an OSError is raised when the redirect URI is already in use
+        configure_api_stub.configure_api.side_effect = OSError('Address already in use')
         helper_mock.return_value = configure_api_stub
         with self.assertRaises(SystemExit) as sys_exit:
             main.main()
