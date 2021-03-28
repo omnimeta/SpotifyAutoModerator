@@ -18,12 +18,12 @@ Automated moderator for collaborative playlists on Spotify.
 ## Problem
 
 Spotify's collaborative playlists can be an awesome tool for constructing and sharing unique mixes of music with friends (and more).
-However, there are two crucial issues with Spotify's collaborative playlist system that can be a great annoyance for regular users:
+However, there are two major issues with Spotify's collaborative playlist system that can be a great annoyance for regular users:
 
 * any user can add any track to a public collaborative playlist; and
 * any user can remove any track from a public collaborative playlist.
 
-Imagine spending years constructing and managing the perfect \<your preferred microgenre\> playlist with your close friends, just for a random Spotify artist to use their burner account to empty your playlist and replace it with their own (extremely underwhelming) music of a completely unrelated subgenre. This happens.
+Imagine spending years constructing and managing the perfect \<your preferred microgenre\> playlist with your close friends, just for a troll account to empty your playlist and add their own (extremely underwhelming) music of a completely unrelated subgenre.
 
 ## Solution
 
@@ -40,8 +40,8 @@ SpotifyAutoModerator monitors all (or a chosen subset of) your collaborative pla
 
 Requirements:
 
-* python3, and
-* pip3 (used to install application-level dependencies).
+* [python3](https://www.python.org/downloads/), and
+* [pip3](https://pip.pypa.io/en/stable/installing/) (used to install application-level dependencies).
 
 To install SpotifyAutoModerator, run the following commands:
 
@@ -53,11 +53,11 @@ $> ./setup.sh
 
 ### Windows
 
-PowerShell (i.e., the "Windows Terminal") is required to run SpotifyAutoModerator on Windows. If you are not sure whether you have PowerShell installed, simply search for "Windows Terminal" in the Microsoft App Store.
+[Windows PowerShell](https://docs.microsoft.com/en-us/windows/terminal/get-started) (i.e., the "Windows Terminal") is required to run SpotifyAutoModerator on Windows. If you are not sure whether you have PowerShell installed, simply search for "Windows Terminal" in the Microsoft App Store.
 
 To install SpotifyAutoModerator on Windows:
 
-* Download the following zip file: https://github.com/omnimeta/SpotifyAutoModerator/raw/main/spautomod4win.zip
+* Download the following zip file: https://github.com/omnimeta/SpotifyAutoModerator/releases/download/v0.0.2/spautomod4win-v0.0.2.zip
 * Extract the file in the desired folder - this should create an `spautomod4win` folder.
  
 In the next setup step you will need to edit the `data/config.yaml` file within this `spautomod4win` folder.
@@ -330,6 +330,7 @@ or
 ``` shell
 $> ./spautomod --loop
 ```
+You will have the opportunity to quit after the completion of each iteration. Unless you ask to quit, another iteration will begin after a predefined delay (determined by `PLAYLIST_CONFIG.DELAY_BETWEEN_SCANS` in your configuration file).
 
 ### Running the Application on Windows
 
@@ -368,6 +369,7 @@ or
 ``` powershell
 $> ./spautomod.exe --loop
 ```
+You will have the opportunity to quit after the completion of each iteration. Unless you ask to quit, another iteration will begin after a predefined delay (determined by `PLAYLIST_CONFIG.DELAY_BETWEEN_SCANS` in your configuration file).
 
 ### Troubleshooting
 
@@ -384,11 +386,9 @@ If you are unable to resolve your problem, [create a new issue](https://github.c
 
 ## Development
 
-### Project Roadmap
+### Motivation
 
-The following are the current goals of the project:
-* add more complex integration tests;
-* provide a Docker-based version.
+Frustration.
 
 ### Testing
 
